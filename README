@@ -40,6 +40,6 @@ For macos
 ## Verify
 
 1. Download binary into release/$target folder
-2. Run ./bdk-rep-build verify $target
+2. Run ./bdk-rep-build verify <target>
 
  > ./bdk-rep-build verify darwin
