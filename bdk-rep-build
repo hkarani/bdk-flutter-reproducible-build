@@ -1,0 +1,171 @@
+#!/bin/sh
+
+set -e
+
+bdkrepbuild__build() {
+    if [ -z "$2" ]; then
+        echo "❌ You did not specify a build target! ❌"
+        usage=" 
+        USAGE
+            $ ./bdk-rep-build build <target>
+
+        EXAMPLE 
+            $ ./bdk-rep-build build linux"
+        echo "$usage"
+        exit 1  # Exit script with error code
+    fi
+
+    case "$2" in
+    "android" | "linux" | "darwin")
+        ;;
+    *)
+        echo "❌ Error: $2 is not a supported target. ❌"
+supported_targets="
+
+Supported targets are:
+        - linux 
+        - android
+        - darwin"
+        echo "$supported_targets"
+        exit 1
+        ;;
+    esac
+
+
+    target=$2   
+    export target
+    . "./$target.sh"
+}
+
+bdkrepbuild__help_build(){
+
+help="
+Create a build for specific target
+
+USAGE
+    $ ./bdk-rep-build build <target>
+
+EXAMPLE 
+    $ ./bdk-rep-build build linux
+"
+
+echo "$help"
+
+}
+
+
+bdkrepbuild__verify(){
+    if [ -z "$2" ]; then
+        echo "❌ You did not specify a target to verify! ❌"
+        usage=" 
+        USAGE
+            $ ./bdk-rep-build verify <target>
+
+        EXAMPLE 
+            $ ./bdk-rep-build verify linux"
+        echo "$usage"
+        exit 1  # Exit script with error code
+    fi
+
+    case "$2" in
+    "android" | "linux" | "darwin")
+        ;;
+    *)
+        echo "❌ Error: $2 is not a supported target you can verify. ❌"
+    supported_targets="
+
+Supported targets are:
+        - linux 
+        - android
+        - darwin"
+        echo "$supported_targets"
+        exit 1
+        ;;
+    esac
+
+    target=$2   
+    export target
+
+    . "./verifier.sh"
+
+}
+
+bdkrepbuild__help_verify() {
+    help="
+Verify a build for a specific target
+
+USAGE
+    $ ./bdk-rep-build verify <target>
+
+EXAMPLE 
+    $ ./bdk-rep-build verify linux
+"
+
+echo "$help"
+
+}
+
+
+
+bdkrepbuild__help(){
+
+    if [ $# -eq 2 ]; then
+      call "bdkrepbuild__$1_$2" "$@"
+      exit 0
+    fi
+
+    help="
+
+ ____  ____  _  __     ____  _____ ____       ____  _   _ ___ _     ____  
+| __ )|  _ \| |/ /    |  _ \| ____|  _ \     | __ )| | | |_ _| |   |  _ \ 
+|  _ \| | | | ' /_____| |_) |  _| | |_) |____|  _ \| | | || || |   | | | |
+| |_) | |_| | . \_____|  _ <| |___|  __/_____| |_) | |_| || || |___| |_| |
+|____/|____/|_|\_\    |_| \_\_____|_|        |____/ \___/|___|_____|____/ 
+
+        Cross-compile and verify reproducible builds for bdk-rust library.
+            * To use with : BDK-Flutter, LWK-Dart, BOLTZ-dart
+            * Targeting: Android, iOS, Darwin 
+USAGE
+    $ bdk-rep-build [COMMAND]
+    $ bdk-rep-build help [COMMAND]
+
+COMMANDS
+    help                show help
+    
+    verify          verify build against release
+    build           build artifacts for a target     
+
+"
+
+echo "$help"
+
+}
+
+
+
+call() {
+    func=$1
+    if type "$func" 1>/dev/null 2>&1; then
+        # if it's bdk_rep_build COMMAND help, then call help for that command
+        case $3 in
+          -h|--help|help)
+          call "bdkrepbuild__help_$2"
+          exit 0
+          ;;
+        esac
+        shift # remove func from args
+        "$func" "$@"  # invoke our named function w/ all remaining arguments
+    else
+        # if it's bdk_rep_build -h COMMAND, then call help for that command
+        case $2 in
+          -h|--help)
+          call "bdkrepbuild__help_$3"
+          exit 0
+          ;;
+        esac
+        bdkrepbuild__help
+        exit 1
+    fi
+}
+
+call "bdkrepbuild__$1" "$@"

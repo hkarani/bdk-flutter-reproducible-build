@@ -1,0 +1,42 @@
+FROM ubuntu:latest
+
+# Install dependencies for Rust development
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  pkg-config \
+  libssl-dev \
+  jq \
+  curl \
+  unzip
+
+# Install Rust compiler (using rustup)
+RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
+
+# Install cargo - rust package manager
+RUN $HOME/.cargo/bin/cargo install cargo-ndk
+
+# Install ndk package manager
+RUN curl -L https://dl.google.com/android/repository/android-ndk-r26d-linux.zip > ndk.zip
+
+# Unzip the ndk
+RUN unzip ndk.zip
+
+# Set NDK environment variable
+ENV ANDROID_NDK_HOME=$HOME/android-ndk-r26d
+# Copy the folder from root
+COPY src/bdk-flutter/rust /app
+
+# Change directory
+WORKDIR /app
+
+# Install targets for each architecture
+RUN $HOME/.cargo/bin/rustup target add aarch64-linux-android armv7-linux-androideabi
+
+# Run cargo ndk with aarch64 target
+RUN $HOME/.cargo/bin/cargo ndk -t aarch64-linux-android build --lib --release
+
+# Run a tiny program to make the build runnable
+CMD ["sleep", "infinity"]
+
+
+
