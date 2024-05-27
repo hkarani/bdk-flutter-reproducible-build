@@ -29,15 +29,17 @@ COMMANDS
 # BUILDING
 
 For linux
-  > ./bdk-rep-build linux
+  > ./bdk-rep-build build linux
 
 For androdid
-  > ./bdk-rep-build android
+  > ./bdk-rep-build build android
 
 For macos
-  > ./bdk-rep-build darwin
+  > ./bdk-rep-build build darwin
 
 ## Verify
 
-1. Download binary into release/$target
-2. Run ./bdk-rep-build $targe
+1. Download binary into release/$target folder
+2. Run ./bdk-rep-build verify $target
+
+ > /bdk-rep-build verify dawin
