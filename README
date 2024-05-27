@@ -1,0 +1,43 @@
+
+# BDK-REP-BUILD
+
+ ____  ____  _  __     ____  _____ ____       ____  _   _ ___ _     ____  
+| __ )|  _ \| |/ /    |  _ \| ____|  _ \     | __ )| | | |_ _| |   |  _ \ 
+|  _ \| | | | ' /_____| |_) |  _| | |_) |____|  _ \| | | || || |   | | | |
+| |_) | |_| | . \_____|  _ <| |___|  __/_____| |_) | |_| || || |___| |_| |
+|____/|____/|_|\_\    |_| \_\_____|_|        |____/ \___/|___|_____|____/ 
+
+        Cross-compile and verify reproducible builds for bdk-rust library.
+            * To use with : BDK-Flutter, LWK-Dart, BOLTZ-dart
+            * Targeting: Android, iOS, Darwin 
+USAGE
+    $ bdk-rep-build [COMMAND]
+    $ bdk-rep-build help [COMMAND]
+
+COMMANDS
+    help                show help
+    
+    verify          verify build against release
+    build           build artifacts for a target  
+
+
+## USAGE
+
+> Clone the library you like to test into the SRC folder
+> chmod +x bdk_rep_build
+
+# BUILDING
+
+For linux
+  > ./bdk-rep-build linux
+
+For androdid
+  > ./bdk-rep-build android
+
+For macos
+  > ./bdk-rep-build darwin
+
+## Verify
+
+1. Download binary into release/$target
+2. Run ./bdk-rep-build $targe
