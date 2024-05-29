@@ -6,7 +6,7 @@ checkfolders() {
   if [ -d "$folder_name" ]; then
     # Check if the folder has any files (using find)
     if [ "$(find "$folder_name" -mindepth 1 -maxdepth 1 -type f -print -quit)" ]; then
-      continue
+      return
     else
 empty_folder="
 The lib folder '$folder_name' exists but is empty.
@@ -35,7 +35,7 @@ The lib folder '$folder_name' is missing.
    if [ -d "$folder_name2" ]; then
     # Check if the folder has any files (using find)
     if [ "$(find "$folder_name2" -mindepth 1 -maxdepth 1 -type f -print -quit)" ]; then
-      continue
+      return
     else
 empty_folder="
 The release folder '$folder_name2' exists but does have a binary file.
@@ -61,7 +61,7 @@ checkfolders "lib/$target"  "release/$target"
 # Function to check file existence and size equality (basic check)
 check_file_basics () {
 
-  if [ "$target" == "darwin"]; then
+  if [ "$target" == "darwin" ]; then
     local file1="$folder_name/rust_bdk_ffi.xcframework"
     local file2="$folder_name2/rust_bdk_ffi.xcframework"
   else
@@ -91,7 +91,7 @@ check_file_basics () {
 check_file_basics
 # Main script execution
 
-if [ "$target" == "darwin"]; then
+if [ "$target" == "darwin" ]; then
   file1="$folder_name/rust_bdk_ffi.xcframework"
   file2="$folder_name2/rust_bdk_ffi.xcframework"
 else
