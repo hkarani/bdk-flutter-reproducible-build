@@ -89,7 +89,7 @@ if [ ! -d "$DIR_TO_CREATE" ]; then
     exit 1
   fi
 else
-  continue
+  return 
 fi
 
 
@@ -102,7 +102,7 @@ if [ ! -d "$DIR_TO_CREATE2" ]; then
     exit 1
   fi
 else
-  continue
+  return
 fi
 # cp -f src/bdk-flutter/rust/target/aarch64-linux-android/release/libbdk_flutter.so lib/darwin/mac/libbdk_flutter_x64.so
 # cp -f src/bdk-flutter/rust/target/aarch64-linux-android/release/libbdk_flutter.so lib/darwin/mac/libbdk_flutter_aarch.so
