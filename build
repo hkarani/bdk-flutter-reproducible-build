@@ -28,11 +28,11 @@ for target in $TARGETS; do
   fi
   mkdir "$folder_name"
 
-  if [ $target=="linux" ]; then 
+  if [ "$target" == "linux" ]; then 
       architecture="x86_64-unknown-linux-gnu"
   fi
 
-  if [ $target=="android" ]; then 
+  if [ "$target" == "android" ]; then 
       architecture="aarch64-linux-android"
   fi
   
