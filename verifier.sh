@@ -61,7 +61,7 @@ checkfolders "lib/$target"  "release/$target"
 # Function to check file existence and size equality (basic check)
 check_file_basics () {
 
-  if [ "$target" == "darwin" ]; then
+  if [ "$target" = "darwin" ]; then
     local file1="$folder_name/rust_bdk_ffi.xcframework"
     local file2="$folder_name2/rust_bdk_ffi.xcframework"
   else
@@ -85,13 +85,13 @@ check_file_basics () {
     exit 1
   fi
 
-  echo "Files match in size"
+  # echo "Files size check passed ✅"
 }
 
 check_file_basics
 # Main script execution
 
-if [ "$target" == "darwin" ]; then
+if [ "$target" = "darwin" ]; then
   file1="$folder_name/rust_bdk_ffi.xcframework"
   file2="$folder_name2/rust_bdk_ffi.xcframework"
 else

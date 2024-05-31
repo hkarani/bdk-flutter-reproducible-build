@@ -83,10 +83,10 @@ Supported targets are:
         ;;
     esac
 
-    target=$2   
-    export target
+    target="$2"   
+    export $target
 
-    . "./verifier.sh"
+    . ./verifier.sh
 
 }
 
