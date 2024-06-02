@@ -4,7 +4,7 @@ checkfolders() {
   folder_name=$1
   folder_name2=$2
   if [ -d "$folder_name" ]; then
-    # Check if the folder has any files (using find)
+    # Check if the folder has any files
     if [ "$(find "$folder_name" -mindepth 1 -maxdepth 1 -type f -print -quit)" ]; then
       return
     else
@@ -58,15 +58,22 @@ The release folder '$folder_name2' is missing.
 
 checkfolders "lib/$target"  "release/$target"
 
-# Function to check file existence and size equality (basic check)
+# Function to check file existence and size equality
 check_file_basics () {
+  
 
   if [ "$target" = "darwin" ]; then
-    local file1="$folder_name/rust_bdk_ffi.xcframework"
-    local file2="$folder_name2/rust_bdk_ffi.xcframework"
+    file1_pattern="$folder_name/rust_bdk_ffi-*.xcframework"
+    file1_pattern2="$folder_name2/rust_bdk_ffi-*.xcframework"
+    local file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
+    local file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
+    # local file1="$folder_name/rust_bdk_ffi.xcframework"
+    # local file2="$folder_name2/rust_bdk_ffi.xcframework"
   else
-    local file1="$folder_name/libbdk_flutter.so"
-    local file2="$folder_name2/libbdk_flutter.so"
+    file1_pattern="$folder_name/libbdk_flutter-*.so"
+    file1_pattern2="$folder_name2/libbdk_flutter-*.so"
+    local file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
+    local file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
   fi
 
   if [ ! -f "$file1" ]; then
@@ -91,17 +98,29 @@ check_file_basics () {
 check_file_basics
 # Main script execution
 
-if [ "$target" = "darwin" ]; then
-  file1="$folder_name/rust_bdk_ffi.xcframework"
-  file2="$folder_name2/rust_bdk_ffi.xcframework"
-else
-  file1="$folder_name/libbdk_flutter.so"
-  file2="$folder_name2/libbdk_flutter.so"
-fi
+ if [ "$target" = "darwin" ]; then
+    file1_pattern="$folder_name/rust_bdk_ffi-*.xcframework"
+    file1_pattern2="$folder_name2/rust_bdk_ffi-*.xcframework"
+    file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
+    file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
+    # local file1="$folder_name/rust_bdk_ffi.xcframework"
+    # local file2="$folder_name2/rust_bdk_ffi.xcframework"
+  else
+    file1_pattern="$folder_name/libbdk_flutter-*.so"
+    file1_pattern2="$folder_name2/libbdk_flutter-*.so"
+    file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
+    file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
+  fi
 
-# # Get file names as arguments
-# file1="$folder_name/libbdk_flutter.so"
-# file2="$folder_name2/libbdk_flutter.so"
+# Calculate checksums for both files
+checksum1=$(md5sum "$file1" | cut -d ' ' -f 1)
+checksum2=$(md5sum "$file2" | cut -d ' ' -f 1)
+
+# Compare checksums
+if [ "$checksum1" != "$checksum2" ]; then
+  echo "Error: Checksums for '$file1' and '$file2' do not match."
+  exit 1
+fi
 
 
 # Checking 
@@ -111,11 +130,11 @@ result=$(cmp "$file1" "$file2")
 if [ $? -eq 0 ]; then
   echo "✅ Success! The binaries are byte by byte identical✅."
 else
-  # If there's a difference, display details (optional)
+  # If there's a difference, display details
   echo "❌Fail. Mismatch detected❌."
   if [[ "$result" != "" ]]; then
     echo "Files are not comparable" 
   fi
-  exit 1  # Indicate non-identical files with an exit code (optional)
+  exit 1 
 fi
 
