@@ -77,12 +77,12 @@ check_file_basics () {
   fi
 
   if [ ! -f "$file1" ]; then
-    echo "Error: File '$file1' does not exist"
+    echo "🔴Error: Build binary had not been build to lib/linux folder🔴"
     exit 1
   fi
 
   if [ ! -f "$file2" ]; then
-    echo "Error: File '$2' does not exist"
+    echo "🔴Error: Release binary had not been downloaded to release/linux folder🔴"
     exit 1
   fi
 
@@ -112,6 +112,10 @@ check_file_basics
     file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
   fi
 
+if [ "$(basename "$file1")" != "$(basename "$file2")" ]; then
+  echo "🟡 You might be verifying two different bdk-rust versions 🟡"
+  
+fi
 # Calculate checksums for both files
 checksum1=$(md5sum "$file1" | cut -d ' ' -f 1)
 checksum2=$(md5sum "$file2" | cut -d ' ' -f 1)
