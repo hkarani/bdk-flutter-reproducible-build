@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "Starting macos build..."
+echo "Starting Darwin build..."
 # Check the necessary libraries and binaries are installed
 # Check for Rust and Cargo
 if [ ! $(command -v rustc) ]; then
@@ -23,9 +23,27 @@ fi
 #add rust target for darwin/macos
 cd src/bdk-flutter/rust
 
+version_line=$(grep -E '^version = .*' Cargo.toml)
+
+# Extract the version string after the  '='
+if [ ! -z "$version_line" ]; then
+    version=$(echo "$version_line" | cut -d '=' -f2 | tr -d '[:space:]')
+    package_version=$(echo "$version" | sed 's/^"//' | sed 's/"$//')
+else
+    echo "Error: Could not find 'version' in Cargo.toml"
+fi
+
+# Print the version or handle errors
+if [ ! -z "$package_version" ]; then
+  echo "Package version: $package_version"
+else
+  echo "An error occurred while reading the version."
+  exit 1  
+fi
+
 echo "Installing targets"
 
-# Define targets (replace with your actual targets)
+# Define targets
 MAC_TARGETS="x86_64-apple-darwin aarch64-apple-darwin"
 IOS_TARGETS="aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim"
 
@@ -56,7 +74,7 @@ done
 for target in $IOS_TARGETS; do
   # Build for the current target
   echo "Building for target: $target"
-  cargo build --target "$target"
+  cargo build -release --target "$target"
 
   # Check the exit code of cargo build
   if [ $? -ne 0 ]; then
@@ -70,7 +88,7 @@ done
 for target in $MAC_TARGETS; do
   # Build for the current target
   echo "Building for target: $target"
-  cargo build --target "$target"
+  cargo build --release --target "$target"
 
   # Check the exit code of cargo build
   if [ $? -ne 0 ]; then
@@ -78,7 +96,16 @@ for target in $MAC_TARGETS; do
     exit 1
   fi
 done
-cd ../.../../../../
+cd ../../../
+
+current_dir=$(pwd)
+folder_name="lib/darwin"
+
+if [ -d "$folder_name" ]; then
+    rm -rf "$folder_name"
+fi
+mkdir "$folder_name"
+
 #use lipo to merge the simulator and real version of the library
 DIR_TO_CREATE="lib/darwin/mac"
 
@@ -104,20 +131,23 @@ if [ ! -d "$DIR_TO_CREATE2" ]; then
 else
   return
 fi
-# cp -f src/bdk-flutter/rust/target/aarch64-linux-android/release/libbdk_flutter.so lib/darwin/mac/libbdk_flutter_x64.so
-# cp -f src/bdk-flutter/rust/target/aarch64-linux-android/release/libbdk_flutter.so lib/darwin/mac/libbdk_flutter_aarch.so
 
 lipo -create -output $DIR_TO_CREATE2 \
-        src/bdk-flutter/rust/target/aarch64-linux-android/release/libbdk_flutter.so\
-        src/bdk-flutter/rust/target/aarch64-linux-android/release/libbdk_flutter.so
+        src/bdk-flutter/rust/target/aarch64-apple-ios/release/libbdk_flutter.a\
+        src/bdk-flutter/rust/target/x86_64-apple-ios/release/libbdk_flutter.a
 
-lipo -create -output $DIR_TO_CREATE1 \
-        src/bdk-flutter/rust/target/aarch64-linux-android/release/libbdk_flutter.so\
-        src/bdk-flutter/rust/target/aarch64-linux-android/release/libbdk_flutter.so\
-        src/bdk-flutter/rust/target/aarch64-linux-android/release/libbdk_flutter.so
+lipo -create -output $DIR_TO_CREATE \
+        src/bdk-flutter/rust/target/x86_64-apple-darwin/release/libbdk_flutter.a\
+        src/bdk-flutter/rust/target/aarch64-apple-darwin/release/libbdk_flutter.a\
+        
 
 xcodebuild -create-xcframework \
-        -library $DIR_TO_CREATE1 \
+        -library $DIR_TO_CREATE \
         -library $DIR_TO_CREATE2 \
-        -library src/bdk-flutter/rust/target/aarch64-linux-android/release/libbdk_flutter.so \
-        -output lib/darwin/rust_bdk_ffi.xcframework
+        -library src/bdk-flutter/rust/target/aarch64-apple-ios-sim/release/libbdk_flutter.a \
+        -output "lib/darwin/rust_bdk_ffi_$package_version.xcframework"
+
+rm -rf src/bdk-flutter/rust/target
+rm -rf $DIR_TO_CREATE
+rm -rf $DIR_TO_CREATE2
+echo "Build completed! Libraries are in lib/android * folders."
