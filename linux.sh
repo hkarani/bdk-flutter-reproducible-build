@@ -62,4 +62,4 @@ echo "File copied"
 docker kill $container_id
 echo "build-$target container stoppped"
 
-echo "Build completed! Libraries are in lib/linux * folders."
+echo "Build completed! Library in lib/linux folder."

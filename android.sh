@@ -55,4 +55,4 @@ echo "File copied"
 docker kill $container_id
 echo "build-$target container stoppped"
 
-echo "Build completed! Libraries are in lib/android * folders."
+echo "Build completed! Library in lib/android folder."

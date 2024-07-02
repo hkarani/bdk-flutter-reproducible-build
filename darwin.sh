@@ -150,4 +150,4 @@ xcodebuild -create-xcframework \
 rm -rf src/bdk-flutter/rust/target
 rm -rf $DIR_TO_CREATE
 rm -rf $DIR_TO_CREATE2
-echo "Build completed! Libraries are in lib/android * folders."
+echo "Build completed! Library are in lib/darwin folder."
