@@ -63,26 +63,26 @@ check_file_basics () {
   
 
   if [ "$target" = "darwin" ]; then
-    file1_pattern="$folder_name/rust_bdk_ffi-*.xcframework"
-    file1_pattern2="$folder_name2/rust_bdk_ffi-*.xcframework"
+    file1_pattern="$folder_name/rust_bdk_ffi_*.xcframework"
+    file1_pattern2="$folder_name2/rust_bdk_ffi_*.xcframework"
     local file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
     local file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
     # local file1="$folder_name/rust_bdk_ffi.xcframework"
     # local file2="$folder_name2/rust_bdk_ffi.xcframework"
   else
-    file1_pattern="$folder_name/libbdk_flutter-*.so"
-    file1_pattern2="$folder_name2/libbdk_flutter-*.so"
+    file1_pattern="$folder_name/libbdk_flutter_*.a"
+    file1_pattern2="$folder_name2/libbdk_flutter_*.a"
     local file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
     local file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
   fi
 
   if [ ! -f "$file1" ]; then
-    echo "🔴Error: Build binary had not been build to lib/linux folder🔴"
+    echo "🔴Error: Build binary has not been build to lib/$target folder🔴"
     exit 1
   fi
 
   if [ ! -f "$file2" ]; then
-    echo "🔴Error: Release binary had not been downloaded to release/linux folder🔴"
+    echo "🔴Error: Release binary had not been downloaded to release/$target folder🔴"
     exit 1
   fi
 
@@ -99,15 +99,15 @@ check_file_basics
 # Main script execution
 
  if [ "$target" = "darwin" ]; then
-    file1_pattern="$folder_name/rust_bdk_ffi-*.xcframework"
-    file1_pattern2="$folder_name2/rust_bdk_ffi-*.xcframework"
+    file1_pattern="$folder_name/rust_bdk_ffi_*.xcframework"
+    file1_pattern2="$folder_name2/rust_bdk_ffi_*.xcframework"
     file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
     file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
     # local file1="$folder_name/rust_bdk_ffi.xcframework"
     # local file2="$folder_name2/rust_bdk_ffi.xcframework"
   else
-    file1_pattern="$folder_name/libbdk_flutter-*.so"
-    file1_pattern2="$folder_name2/libbdk_flutter-*.so"
+    file1_pattern="$folder_name/libbdk_flutter-*.a"
+    file1_pattern2="$folder_name2/libbdk_flutter-*.a"
     file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
     file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
   fi
