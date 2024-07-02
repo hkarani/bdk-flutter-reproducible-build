@@ -50,7 +50,7 @@ architecture="aarch64-linux-android"
 
 
 full_path="/$current_dir/$folder_name"
-docker cp -a $container_id:"/app/target/$architecture/release/libbdk_flutter.so" "$full_path/libbdk_flutter-$package_version.so"
+docker cp -a $container_id:"/app/target/$architecture/release/libbdk_flutter.a" "$full_path/libbdk_flutter-$package_version.a"
 echo "File copied"
 docker kill $container_id
 echo "build-$target container stoppped"

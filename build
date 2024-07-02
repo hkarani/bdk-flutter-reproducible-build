@@ -37,7 +37,7 @@ for target in $TARGETS; do
   fi
   
   full_path="/$current_dir/$folder_name"
-  docker cp -a $container_id:"/app/target/$architecture/release/libbdk_flutter.so" $full_path 
+  docker cp -a $container_id:"/app/target/$architecture/release/libbdk_flutter.a" $full_path 
   echo "File copied"
   docker kill $container_id
   echo "build-$target container stoppped"
