@@ -1,8 +1,8 @@
-.PHONY: all clean
+# .PHONY: all clean
 
-all: build.sh
-		./build.sh  # Indentation with a tab character
+# all: build.sh
+# 		./build.sh  # Indentation with a tab character
 
-clean:
-		rm -rf lib-* your_project/build.sh
+# clean:
+# 		rm -rf lib-* your_project/build.sh
 
