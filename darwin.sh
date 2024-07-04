@@ -132,18 +132,18 @@ else
   return
 fi
 
-lipo -create -output $DIR_TO_CREATE2 \
-        src/bdk-flutter/rust/target/aarch64-apple-ios/release/libbdk_flutter.a\
+lipo -create -output "$DIR_TO_CREATE2/libbdk_flutter_ios.a" \
+        src/bdk-flutter/rust/target/aarch64-apple-ios/release/libbdk_flutter.a \
         src/bdk-flutter/rust/target/x86_64-apple-ios/release/libbdk_flutter.a
 
-lipo -create -output $DIR_TO_CREATE \
-        src/bdk-flutter/rust/target/x86_64-apple-darwin/release/libbdk_flutter.a\
-        src/bdk-flutter/rust/target/aarch64-apple-darwin/release/libbdk_flutter.a\
+lipo -create -output "$DIR_TO_CREATE/libbdk_flutter_mac.a" \
+        src/bdk-flutter/rust/target/x86_64-apple-darwin/release/libbdk_flutter.a \
+        src/bdk-flutter/rust/target/aarch64-apple-darwin/release/libbdk_flutter.a
         
 
 xcodebuild -create-xcframework \
-        -library $DIR_TO_CREATE \
-        -library $DIR_TO_CREATE2 \
+        -library "$DIR_TO_CREATE/libbdk_flutter_mac.a" \
+        -library "$DIR_TO_CREATE2/libbdk_flutter_ios.a" \
         -library src/bdk-flutter/rust/target/aarch64-apple-ios-sim/release/libbdk_flutter.a \
         -output "lib/darwin/rust_bdk_ffi_$package_version.xcframework"
 
