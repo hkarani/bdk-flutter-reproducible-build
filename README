@@ -24,7 +24,7 @@ COMMANDS
 ## USAGE
 
 > Clone the library you like to test into the SRC folder
-> chmod +x bdk_rep_build
+> chmod +x bdk-rep-build
 
 # BUILDING
 
