@@ -74,7 +74,7 @@ done
 for target in $IOS_TARGETS; do
   # Build for the current target
   echo "Building for target: $target"
-  cargo build -release --target "$target"
+  cargo build --release --target "$target"
 
   # Check the exit code of cargo build
   if [ $? -ne 0 ]; then
