@@ -76,3 +76,6 @@ current_dir=$(pwd)
 full_path="/$current_dir/$folder_name"
 
 cp -a "$current_dir/src/bdk-flutter/rust/target/universal/release/libbdk_flutter.a" "$full_path/libbdk_flutter-$package_version.a"
+
+rm -rf src/bdk-flutter/rust/target
+echo "Build completed! Library are in lib/darwin folder."

@@ -41,23 +41,10 @@ else
   exit 1  
 fi
 
-echo "Installing targets"
+echo "Installing macos targets....."
 
 # Define targets
 MAC_TARGETS="x86_64-apple-darwin aarch64-apple-darwin"
-IOS_TARGETS="aarch64-apple-ios x86_64-apple-ios"
-
-for target in $IOS_TARGETS; do
-  if [ ! $(rustup target list | grep -q "$target") ]; then
-    echo "Target $target not found in Rust toolchain. Downloading and installing..."
-    rustup target add "$target"
-    if [ $? -ne 0 ]; then
-      echo "Error installing target '$target'. Please check your internet connection and try again."
-      exit 1
-    fi
-  fi
-done
-
 
 for target in $MAC_TARGETS; do
   if [ ! $(rustup target list | grep -q "$target") ]; then
@@ -69,7 +56,8 @@ for target in $MAC_TARGETS; do
     fi
   fi
 done
-echo "Buil"
+
+echo "Building targets....."
 # build compiled files in the thier respctive folders
 for target in $MAC_TARGETS; do
   # Build for the current target
@@ -85,55 +73,16 @@ done
 cd ../../../
 
 current_dir=$(pwd)
-folder_name="lib/darwin"
+folder_name="lib/macos"
 
 if [ -d "$folder_name" ]; then
     rm -rf "$folder_name"
 fi
 mkdir "$folder_name"
 
-#use lipo to merge the simulator and real version of the library
-DIR_TO_CREATE="lib/darwin/mac"
+full_path="/$current_dir/$folder_name"
 
-if [ ! -d "$DIR_TO_CREATE" ]; then
-  mkdir -p "$DIR_TO_CREATE"
-  if [ $? -ne 0 ]; then
-    echo "Error creating directory '$DIR_TO_CREATE'. Please check permissions."
-    exit 1
-  fi
-else
-  return 
-fi
-
-
-DIR_TO_CREATE2="lib/darwin/ios"
-
-if [ ! -d "$DIR_TO_CREATE2" ]; then
-  mkdir -p "$DIR_TO_CREATE2"
-  if [ $? -ne 0 ]; then
-    echo "Error creating directory '$DIR_TO_CREATE2'. Please check permissions."
-    exit 1
-  fi
-else
-  return
-fi
-
-lipo -create -output "$DIR_TO_CREATE2/libbdk_flutter_ios.a" \
-        src/bdk-flutter/rust/target/aarch64-apple-ios/release/libbdk_flutter.a \
-        src/bdk-flutter/rust/target/x86_64-apple-ios/release/libbdk_flutter.a
-
-lipo -create -output "$DIR_TO_CREATE/libbdk_flutter_mac.a" \
-        src/bdk-flutter/rust/target/x86_64-apple-darwin/release/libbdk_flutter.a \
-        src/bdk-flutter/rust/target/aarch64-apple-darwin/release/libbdk_flutter.a
-        
-
-xcodebuild -create-xcframework \
-        -library "$DIR_TO_CREATE/libbdk_flutter_mac.a" \
-        -library "$DIR_TO_CREATE2/libbdk_flutter_ios.a" \
-        -library src/bdk-flutter/rust/target/aarch64-apple-ios-sim/release/libbdk_flutter.a \
-        -output "lib/darwin/rust_bdk_ffi_$package_version.xcframework"
+lipo -create -output "$full_path/libbdk_flutter-$package_version.a" src/bdk-flutter/rust/target/x86_64-apple-darwin/release/libbdk_flutter.a src/bdk-flutter/rust/target/aarch64-apple-darwin/release/libbdk_flutter.a
 
 rm -rf src/bdk-flutter/rust/target
-rm -rf $DIR_TO_CREATE
-rm -rf $DIR_TO_CREATE2
 echo "Build completed! Library are in lib/darwin folder."
