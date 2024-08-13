@@ -41,6 +41,16 @@ else
   exit 1  
 fi
 
+# Extract the package name
+name_line=$(grep -E '^name = .*' Cargo.toml)
+if [ ! -z "$name_line" ]; then
+    name=$(echo "$name_line" | cut -d '=' -f2 | tr -d '[:space:]')
+    package_name=$(echo "$name" | sed 's/^"//' | sed 's/"$//')
+else
+    echo "Error: Could not find 'name' in Cargo.toml"
+    exit 1
+fi
+
 echo "Installing macos targets....."
 
 # Define targets
@@ -82,7 +92,7 @@ mkdir "$folder_name"
 
 full_path="/$current_dir/$folder_name"
 
-lipo -create -output "$full_path/libbdk_flutter-$package_version.a" src/bdk-flutter/rust/target/x86_64-apple-darwin/release/libbdk_flutter.a src/bdk-flutter/rust/target/aarch64-apple-darwin/release/libbdk_flutter.a
+lipo -create -output "$full_path/lib$package_name-$package_version.a" src/bdk-flutter/rust/target/x86_64-apple-darwin/release/libbdk_flutter.a src/bdk-flutter/rust/target/aarch64-apple-darwin/release/libbdk_flutter.a
 
 rm -rf src/bdk-flutter/rust/target
-echo "Build completed! Library are in lib/darwin folder."
+echo "Build completed! Library are in lib/ios folder."

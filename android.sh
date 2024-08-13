@@ -33,6 +33,16 @@ else
   exit 1  
 fi
 
+# Extract the package name
+name_line=$(grep -E '^name = .*' Cargo.toml)
+if [ ! -z "$name_line" ]; then
+    name=$(echo "$name_line" | cut -d '=' -f2 | tr -d '[:space:]')
+    package_name=$(echo "$name" | sed 's/^"//' | sed 's/"$//')
+else
+    echo "Error: Could not find 'name' in Cargo.toml"
+    exit 1
+fi
+
 echo "Starting  $target build..."
 docker build -t build-$target -f Dockerfile.$target .
 echo "Build completed!"
@@ -50,7 +60,7 @@ architecture="aarch64-linux-android"
 
 
 full_path="/$current_dir/$folder_name"
-docker cp -a $container_id:"/app/target/$architecture/release/libbdk_flutter.a" "$full_path/libbdk_flutter-$package_version.a"
+docker cp -a $container_id:"/app/target/$architecture/release/libbdk_flutter.a" "$full_path/lib$package_name-$package_version.a"
 echo "File copied"
 docker kill $container_id
 echo "build-$target container stoppped"
