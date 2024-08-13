@@ -9,7 +9,7 @@
 
         Cross-compile and verify reproducible builds for bdk-rust library.
             * To use with : BDK-Flutter, LWK-Dart, BOLTZ-dart
-            * Targeting: Linux, Android, Darwin(MacOS, iOS) 
+            * Targeting: Linux, Android, MacOS, iOS  
 USAGE
     $ bdk-rep-build [COMMAND]
     $ bdk-rep-build help [COMMAND]
@@ -24,7 +24,7 @@ COMMANDS
 ## USAGE
 
 > Clone the library you like to test into the SRC folder
-> chmod +x bdk_rep_build
+> chmod +x bdk-rep-build
 
 # BUILDING
 
