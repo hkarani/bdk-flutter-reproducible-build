@@ -35,11 +35,14 @@ For androdid
   > ./bdk-rep-build build android
 
 For macos
-  > ./bdk-rep-build build darwin
+  > ./bdk-rep-build build macos
+
+For macos
+  > ./bdk-rep-build build ios
 
 ## Verify
 
 1. Download binary into release/$target folder
 2. Run ./bdk-rep-build verify <target>
 
- > ./bdk-rep-build verify darwin
+ > ./bdk-rep-build verify macos
