@@ -22,7 +22,7 @@ fi
 
 
 #add rust target for darwin/macos
-cd src/bdk-flutter/rust
+cd src/*/rust
 
 version_line=$(grep -E '^version = .*' Cargo.toml)
 

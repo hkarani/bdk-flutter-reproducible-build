@@ -11,7 +11,7 @@ if [ ! -x "$(command -v docker)" ]; then
 fi
 # Function to extract the package version from Cargo.toml
   # Use grep to find the line containing 'version' in Cargo.toml
-cd src/bdk-flutter/rust
+cd src/*/rust
 version_line=$(grep -E '^version = .*' Cargo.toml)
 
 # Extract the version string after the  '='
@@ -22,6 +22,17 @@ else
     echo "Error: Could not find 'version' in Cargo.toml"
 fi
 
+# Extract the package name
+name_line=$(grep -E '^name = .*' Cargo.toml)
+if [ ! -z "$name_line" ]; then
+    name=$(echo "$name_line" | cut -d '=' -f2 | tr -d '[:space:]')
+    package_name=$(echo "$name" | sed 's/^"//' | sed 's/"$//')
+else
+    echo "Error: Could not find 'name' in Cargo.toml"
+    exit 1
+fi
+
+
 cd ../../../
 
 
@@ -31,16 +42,6 @@ if [ ! -z "$package_version" ]; then
 else
   echo "An error occurred while reading the version."
   exit 1  
-fi
-
-# Extract the package name
-name_line=$(grep -E '^name = .*' Cargo.toml)
-if [ ! -z "$name_line" ]; then
-    name=$(echo "$name_line" | cut -d '=' -f2 | tr -d '[:space:]')
-    package_name=$(echo "$name" | sed 's/^"//' | sed 's/"$//')
-else
-    echo "Error: Could not find 'name' in Cargo.toml"
-    exit 1
 fi
 
 echo "Starting  $target build..."
