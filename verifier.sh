@@ -70,8 +70,8 @@ check_file_basics () {
     # local file1="$folder_name/rust_bdk_ffi.xcframework"
     # local file2="$folder_name2/rust_bdk_ffi.xcframework"
   else
-    file1_pattern="$folder_name/libbdk_flutter_*.a"
-    file1_pattern2="$folder_name2/libbdk_flutter_*.a"
+    file1_pattern="$folder_name/libbdk_flutter-*.a"
+    file1_pattern2="$folder_name2/libbdk_flutter-*.a"
     local file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
     local file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
   fi
@@ -86,11 +86,11 @@ check_file_basics () {
     exit 1
   fi
 
-  # Check file size equality (basic check)
-  if [ $(stat -c %s "$file1") -ne $(stat -c %s "$file2") ]; then
-    echo "❌Fail. Mismatch detected❌. The files differ in size"
-    exit 1
-  fi
+  # # Check file size equality (basic check)
+  # if [ $(stat -c %s "$file1") -ne $(stat -c %s "$file2") ]; then
+  #   echo "❌Fail. Mismatch detected❌. The files differ in size"
+  #   exit 1
+  # fi
 
   # echo "Files size check passed ✅"
 }
@@ -116,16 +116,6 @@ if [ "$(basename "$file1")" != "$(basename "$file2")" ]; then
   echo "🟡 You might be verifying two different bdk-rust versions 🟡"
   
 fi
-# Calculate checksums for both files
-checksum1=$(md5sum "$file1" | cut -d ' ' -f 1)
-checksum2=$(md5sum "$file2" | cut -d ' ' -f 1)
-
-# Compare checksums
-if [ "$checksum1" != "$checksum2" ]; then
-  echo "Error: Checksums for '$file1' and '$file2' do not match."
-  exit 1
-fi
-
 
 # Checking 
 result=$(cmp "$file1" "$file2")
