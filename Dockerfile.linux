@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
 
 # Copy the folder from root
-COPY src/bdk-flutter/rust /app
+COPY src/*/rust /app
 
 # Change directory
 WORKDIR /app
@@ -23,6 +23,10 @@ RUN $HOME/.cargo/bin/rustup target add x86_64-unknown-linux-gnu
 
 # Run cargo ndk with aarch64 target
 RUN $HOME/.cargo/bin/cargo build --release --target x86_64-unknown-linux-gnu
+
+RUN cd /app/target
+
+RUN ls
 
 RUN ls /app/target/x86_64-unknown-linux-gnu
 # Run a tiny program to make the build runnable

@@ -24,7 +24,7 @@ RUN unzip ndk.zip
 # Set NDK environment variable
 ENV ANDROID_NDK_HOME=$HOME/android-ndk-r26d
 # Copy the folder from root
-COPY src/bdk-flutter/rust /app
+COPY src/*/rust /app
 
 # Change directory
 WORKDIR /app

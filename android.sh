@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e  # Exit on failure
+set +e  # Exit on failure
 
 # Check if docker is installed
 
@@ -22,15 +22,29 @@ else
     echo "Error: Could not find 'version' in Cargo.toml"
 fi
 
-# Extract the package name
-name_line=$(grep -E '^name = .*' Cargo.toml)
-if [ ! -z "$name_line" ]; then
-    name=$(echo "$name_line" | cut -d '=' -f2 | tr -d '[:space:]')
-    package_name=$(echo "$name" | sed 's/^"//' | sed 's/"$//')
+# Extract the name from the [package] section
+package_name_line=$(grep -m 1 -E '^name = .*' Cargo.toml)
+
+# Extract the second name from the [lib] section
+lib_name_line=$(grep -E '^\[lib\]' -A 5 Cargo.toml | grep -E '^name = .*')
+
+# Extract the package name string after the '='
+if [ ! -z "$package_name_line" ]; then
+    package_name=$(echo "$package_name_line" | cut -d '=' -f2 | tr -d '[:space:]' | sed 's/^"//' | sed 's/"$//')
 else
-    echo "Error: Could not find 'name' in Cargo.toml"
+    echo "Error: Could not find 'name' in [package] section"
     exit 1
 fi
+
+# Extract the lib name string after the '=' if it exists
+if [ ! -z "$lib_name_line" ]; then
+    lib_name=$(echo "$lib_name_line" | cut -d '=' -f2 | tr -d '[:space:]' | sed 's/^"//' | sed 's/"$//')
+else
+    lib_name=""
+fi
+
+# Print the final package name
+echo "Package name: $package_name"
 
 
 cd ../../../
@@ -59,9 +73,16 @@ mkdir "$folder_name"
 
 architecture="aarch64-linux-android"
 
+# Assign lib name as package name if lib name exists
+if [ ! -z "$lib_name" ]; then
+  a_file="/app/target/$architecture/release//lib$lib_name.a"
+else 
+  a_file="/app/target/$architecture/release//lib$package_name.a"
+fi
+
 
 full_path="/$current_dir/$folder_name"
-docker cp -a $container_id:"/app/target/$architecture/release/libbdk_flutter.a" "$full_path/lib$package_name-$package_version.a"
+docker cp -a $container_id:"$a_file" "$full_path/lib$package_name-$package_version.a"
 echo "File copied"
 docker kill $container_id
 echo "build-$target container stoppped"
