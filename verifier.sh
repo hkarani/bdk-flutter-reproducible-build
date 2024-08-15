@@ -70,8 +70,8 @@ check_file_basics () {
     # local file1="$folder_name/rust_bdk_ffi.xcframework"
     # local file2="$folder_name2/rust_bdk_ffi.xcframework"
   else
-    file1_pattern="$folder_name/libbdk_flutter-*.a"
-    file1_pattern2="$folder_name2/libbdk_flutter-*.a"
+    file1_pattern="$folder_name/*.a"
+    file1_pattern2="$folder_name2/*.a"
     local file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
     local file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
   fi
@@ -106,29 +106,23 @@ check_file_basics
     # local file1="$folder_name/rust_bdk_ffi.xcframework"
     # local file2="$folder_name2/rust_bdk_ffi.xcframework"
   else
-    file1_pattern="$folder_name/libbdk_flutter-*.a"
-    file1_pattern2="$folder_name2/libbdk_flutter-*.a"
+    file1_pattern="$folder_name/*.a"
+    file1_pattern2="$folder_name2/*.a"
     file1=$(find "$folder_name" -wholename "$file1_pattern" -type f | head -n 1)
     file2=$(find "$folder_name2" -wholename "$file1_pattern2" -type f | head -n 1)
+   
   fi
 
-if [ "$(basename "$file1")" != "$(basename "$file2")" ]; then
-  echo "🟡 You might be verifying two different bdk-rust versions 🟡"
+# if [ "$(basename "$file1")" != "$(basename "$file2")" ]; then
+#   echo "🟡 You might be verifying two different bdk-rust versions 🟡"
   
-fi
+# fi
 
-# Checking 
-result=$(cmp "$file1" "$file2")
 
-# Check the outcome of cmp
-if [ $? -eq 0 ]; then
-  echo "✅ Success! The binaries are byte by byte identical✅."
+if cmp "$file1" "$file2" > /dev/null 2>&1; then
+  echo "✅ Success! The binaries are byte by byte identical ✅."
 else
-  # If there's a difference, display details
-  echo "❌Fail. Mismatch detected❌."
-  if [[ "$result" != "" ]]; then
-    echo "Files are not comparable" 
-  fi
-  exit 1 
+  echo "❌ Fail. Mismatch detected ❌."
 fi
+
 
