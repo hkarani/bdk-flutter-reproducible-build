@@ -102,7 +102,7 @@ full_path="/$current_dir/$folder_name"
 if [ ! -z "$lib_name" ]; then
   a_file="$current_dir/src/*/rust/target/universal/release/lib$lib_name.a"
 else 
-  a_file=="$current_dir/src/*/rust/target/universal/release/lib$package_name.a"
+  a_file="$current_dir/src/*/rust/target/universal/release/lib$package_name.a"
 fi
 
 cp -a $a_file "$full_path/lib$package_name-$package_version.a"
