@@ -1,41 +1,46 @@
-#!/bin/sh
+#!/bin/bash
+
 
 set -e
 
+
 bdkrepbuild__build() {
-    if [ -z "$2" ]; then
-        echo "❌ You did not specify a build target! ❌"
-        usage=" 
-        USAGE
-            $ ./bdk-rep-build build <target>
+    supported_libraries_keys=("bdk-flutter" "boltz-dart" "lwk-dart")
+    supported_libraries_urls=("https://github.com/LtbLightning/bdk-flutter" "https://github.com/SatoshiPortal/boltz-dart" "https://github.com/SatoshiPortal/lwk-dart")
 
-        EXAMPLE 
-            $ ./bdk-rep-build build linux"
-        echo "$usage"
-        exit 1  # Exit script with error code
+    # Function to get the repository URL
+    get_repo_url() {
+        local library_name="$1"
+        for i in "${!supported_libraries_keys[@]}"; do
+            if [[ "${supported_libraries_keys[i]}" == "$library_name" ]]; then
+                echo "${supported_libraries_urls[i]}"
+                return
+            fi
+        done
+        echo "Library not found"
+    }
+    echo $2
+    echo $(get_repo_url $2)
+    cd src/
+    # git clone $(get_repo_url $2)
+    cd $2
+    TAG_NAME="$3"
+
+    # Check if the tag exists
+    if git tag --list | grep -q "^$TAG_NAME$"; then
+        echo "The tag '$TAG_NAME' exists."
+    else
+        echo "The tag '$TAG_NAME' does not exist."
     fi
+    git checkout $3
+    cd rust/
+    cargo build --target $4
 
-    case "$2" in
-    "android" | "linux" | "macos" | "ios")
-        ;;
-    *)
-        echo "❌ Error: $2 is not a supported target. ❌"
-supported_targets="
+    # echo $3
 
-Supported targets are:
-        - linux 
-        - android
-        - macos
-        - ios "
-        echo "$supported_targets"
-        exit 1
-        ;;
-    esac
+    # echo $4
 
 
-    target=$2   
-    export target
-    . "./$target.sh"
 }
 
 bdkrepbuild__help_build(){
@@ -56,39 +61,9 @@ echo "$help"
 
 
 bdkrepbuild__verify(){
-    if [ -z "$2" ]; then
-        echo "❌ You did not specify a target to verify! ❌"
-        usage=" 
-        USAGE
-            $ ./bdk-rep-build verify <target>
-
-        EXAMPLE 
-            $ ./bdk-rep-build verify linux"
-        echo "$usage"
-        exit 1  # Exit script with error code
-    fi
-
-    case "$2" in
-    "android" | "linux" | "macos" | "ios")
-        ;;
-    *)
-        echo "❌ Error: $2 is not a supported target you can verify. ❌"
-    supported_targets="
-
-Supported targets are:
-        - linux 
-        - android
-        - macos
-        - ios"
-        echo "$supported_targets"
-        exit 1
-        ;;
-    esac
-
-    target="$2"   
-    export $target
-
-    . ./verifier.sh
+ echo "downnloading $2"
+ echo "checking out $3"
+ echo "building $4"
 
 }
 
