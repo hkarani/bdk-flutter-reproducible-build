@@ -9,8 +9,12 @@ RUN apt-get update && apt-get install -y \
   curl \
   unzip
 
+
+
 # Install Rust compiler (using rustup)
 RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
+
+ENV PATH="/root/.cargo/bin:$PATH"
 
 # Copy the folder from root
 COPY src/*/rust /app
@@ -19,10 +23,10 @@ COPY src/*/rust /app
 WORKDIR /app
 
 # Install targets for each architecture
-RUN $HOME/.cargo/bin/rustup target add x86_64-unknown-linux-gnu
+RUN rustup target add x86_64-unknown-linux-gnu
 
 # Run cargo ndk with aarch64 target
-RUN $HOME/.cargo/bin/cargo build --release --target x86_64-unknown-linux-gnu
+RUN cargo build --release --target x86_64-unknown-linux-gnu
 
 RUN cd /app/target
 
