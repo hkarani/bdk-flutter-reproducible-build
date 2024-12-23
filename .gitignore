@@ -1,3 +1,8 @@
 src/*
 lib/*
 release/*
+
+
+!src/.gitkeep
+!lib/.gitkeep
+!release/.gitkeep
