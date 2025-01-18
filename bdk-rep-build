@@ -34,39 +34,58 @@ bdkrepbuild__build() {
     esac
 
 
-    # if [ -z "$2" ]; then
-    #     echo "❌ You did not specify a build target! ❌"
-    #     usage=" 
-    #     USAGE
-    #         $ ./bdk-rep-build build <target>
+    if [ -z "$3" ]; then
+        echo "❌ You did not specify a build target! ❌"
+        usage=" 
+        USAGE
+            $ ./bdk-rep-build build <library> <target>
 
-    #     EXAMPLE 
-    #         $ ./bdk-rep-build build linux"
-    #     echo "$usage"
-    #     exit 1  # Exit script with error code
-    # fi
+        EXAMPLE 
+            $ ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu
+        "
+        echo "$usage"
+        exit 1  # Exit script with error code
+    fi
 
-    # case "$2" in
-    # "android" | "linux" | "macos" | "ios")
-    #     ;;
-    # *)
-    #     echo "❌ Error: $2 is not a supported target. ❌"
-    #     supported_targets="
-    #         Supported targets are:
-    #             - linux 
-    #             - android
-    #             - macos
-    #             - ios 
-    #     "
-    #     echo "$supported_targets"
-    #     exit 1
-    #     ;;
-    # esac
+    targets=(
+        "x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu"
+        "armv7-linux-androideabi" "aarch64-linux-android" "i686-linux-android"
+        "x86_64-linux-android" "x86_64-pc-windows-msvc" "x86_64-apple-darwin"
+        "aarch64-apple-darwin" "aarch64-apple-ios" "aarch64-apple-ios-sim"
+        "x86_64-apple-ios"
+    )
+
+    
+    case "$3" in
+        "${targets[@]}")
+            ;;
+    *)
+        echo "❌ Error: $3 is not a supported build target. ❌"
+        supported_targets="
+            Supported targets are:
+                -x86_64-unknown-linux-gnu 
+                -aarch64-unknown-linux-gnu
+                -armv7-linux-androideabi 
+                -aarch64-linux-android 
+                -i686-linux-android  
+                -x86_64-linux-android 
+                -x86_64-pc-windows-msvc 
+                -x86_64-apple-darwin
+                -aarch64-apple-darwin 
+                -aarch64-apple-ios 
+                -aarch64-apple-ios-sim 
+                -x86_64-apple-ios
+        "
+        echo "$supported_targets"
+        exit 1
+        ;;
+    esac
 
 
     # target=$2   
     # export target
     # . "./$target.sh"
+    echo "Building $3 binariy for $2"
 }
 
 bdkrepbuild__help_build(){
