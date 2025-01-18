@@ -57,8 +57,12 @@ bdkrepbuild__build() {
 
     
     case "$3" in
-        "${targets[@]}")
-            ;;
+        "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu" | \
+        "armv7-linux-androideabi" | "aarch64-linux-android" | "i686-linux-android" | \
+        "x86_64-linux-android" | "x86_64-pc-windows-msvc" | "x86_64-apple-darwin" | \
+        "aarch64-apple-darwin" | "aarch64-apple-ios" | "aarch64-apple-ios-sim" | \
+        "x86_64-apple-ios")
+        ;;
     *)
         echo "❌ Error: $3 is not a supported build target. ❌"
         supported_targets="
@@ -90,55 +94,99 @@ bdkrepbuild__build() {
 
 bdkrepbuild__help_build(){
 
-help="
-Create a build for specific target
+    help="
+    Create a binaries for specific target
+    USAGE
+        $ ./bdk-rep-build build <library> <target>
 
-USAGE
-    $ ./bdk-rep-build build <target>
+    EXAMPLE 
+        $ ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu
+    "
 
-EXAMPLE 
-    $ ./bdk-rep-build build linux
-"
-
-echo "$help"
+    echo "$help"
 
 }
 
 
 bdkrepbuild__verify(){
+    # check if the library to be built has been passed to the script
     if [ -z "$2" ]; then
+        echo "❌ You did not specify a library to verify! ❌"
+        usage=" 
+        USAGE
+            $ ./bdk-rep-build verify <library> <target>
+
+        EXAMPLE 
+            $ ./bdk-rep-build verify bolt-dart x86_64-unknown-linux-gnu
+        "
+        echo "$usage"
+        exit 1 
+    fi
+
+    case "$2" in
+    "bdk-flutter" | "boltz-dart" | "lwk-dart")
+        ;;
+    *)
+        echo "❌ Error: $2 is not a supported library. ❌"
+        supported_libraries="
+            Supported libraries are:
+                - lwk-dart
+                - bdk-flutter
+                - lwk-dart
+        "
+        echo "$supported_libraries"
+        exit 1
+        ;;
+    esac
+
+    if [ -z "$3" ]; then
         echo "❌ You did not specify a target to verify! ❌"
         usage=" 
         USAGE
-            $ ./bdk-rep-build verify <target>
+            $ ./bdk-rep-build verify <library> <target>
 
         EXAMPLE 
-            $ ./bdk-rep-build verify linux"
+            $ ./bdk-rep-build verify boltz-dart x86_64-unknown-linux-gnu
+        "
         echo "$usage"
         exit 1  # Exit script with error code
     fi
 
-    case "$2" in
-    "android" | "linux" | "macos" | "ios")
+    case "$3" in
+        "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu" | \
+        "armv7-linux-androideabi" | "aarch64-linux-android" | "i686-linux-android" | \
+        "x86_64-linux-android" | "x86_64-pc-windows-msvc" | "x86_64-apple-darwin" | \
+        "aarch64-apple-darwin" | "aarch64-apple-ios" | "aarch64-apple-ios-sim" | \
+        "x86_64-apple-ios")
         ;;
     *)
-        echo "❌ Error: $2 is not a supported target you can verify. ❌"
+        echo "❌ Error: $3 is not a supported target you can verify. ❌"
     supported_targets="
+        Supported targets are:
+                -x86_64-unknown-linux-gnu 
+                -aarch64-unknown-linux-gnu
+                -armv7-linux-androideabi 
+                -aarch64-linux-android 
+                -i686-linux-android  
+                -x86_64-linux-android 
+                -x86_64-pc-windows-msvc 
+                -x86_64-apple-darwin
+                -aarch64-apple-darwin 
+                -aarch64-apple-ios 
+                -aarch64-apple-ios-sim 
+                -x86_64-apple-ios
 
-Supported targets are:
-        - linux 
-        - android
-        - macos
-        - ios"
+       "
         echo "$supported_targets"
         exit 1
         ;;
     esac
 
-    target="$2"   
-    export $target
+    # target="$2"   
+    # export $target
 
-    . ./verifier.sh
+    # . ./verifier.sh
+    echo "Verifying $3 for $2 library"
 
 }
 
@@ -147,10 +195,10 @@ bdkrepbuild__help_verify() {
 Verify a build for a specific target
 
 USAGE
-    $ ./bdk-rep-build verify <target>
+$ ./bdk-rep-build verify <library> <target>
 
 EXAMPLE 
-    $ ./bdk-rep-build verify linux
+$ ./bdk-rep-build verify boltz-dart x86_64-unknown-linux-gnu
 "
 
 echo "$help"
