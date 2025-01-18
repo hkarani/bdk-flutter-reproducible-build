@@ -71,10 +71,10 @@ fi
 # Define target architectures
 
 echo "Starting  $target build..."
-docker build -t build-$target -f Dockerfile.$target .
+DOCKER_BUILDKIT=0 docker build -t build-$target -f Dockerfile.$target .
 echo "Build completed!"
 echo "Running build-$target docker"
-container_id=$(docker run -d build-$target) || fail "Failed to run container"
+container_id=$(docker run -d "build-$target") || { echo "Failed to run container"; exit 1; }
 current_dir=$(pwd)
 folder_name="lib/$target"
 
