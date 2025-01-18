@@ -3,39 +3,70 @@
 set -e
 
 bdkrepbuild__build() {
+
+    # check if the library to be built has been passed to the script
     if [ -z "$2" ]; then
-        echo "❌ You did not specify a build target! ❌"
+        echo "❌ You did not specify a library to build! ❌"
         usage=" 
         USAGE
-            $ ./bdk-rep-build build <target>
+            $ ./bdk-rep-build build <library> <target>
 
         EXAMPLE 
-            $ ./bdk-rep-build build linux"
+            $ ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu"
         echo "$usage"
-        exit 1  # Exit script with error code
+        exit 1 
     fi
 
     case "$2" in
-    "android" | "linux" | "macos" | "ios")
+    "bdk-flutter" | "boltz-dart" | "lwk-dart")
         ;;
     *)
-        echo "❌ Error: $2 is not a supported target. ❌"
-supported_targets="
-
-Supported targets are:
-        - linux 
-        - android
-        - macos
-        - ios "
-        echo "$supported_targets"
+        echo "❌ Error: $2 is not a supported library. ❌"
+        supported_libraries="
+            Supported libraries are:
+                - lwk-dart
+                - bdk-flutter
+                - lwk-dart
+        "
+        echo "$supported_libraries"
         exit 1
         ;;
     esac
 
 
-    target=$2   
-    export target
-    . "./$target.sh"
+    # if [ -z "$2" ]; then
+    #     echo "❌ You did not specify a build target! ❌"
+    #     usage=" 
+    #     USAGE
+    #         $ ./bdk-rep-build build <target>
+
+    #     EXAMPLE 
+    #         $ ./bdk-rep-build build linux"
+    #     echo "$usage"
+    #     exit 1  # Exit script with error code
+    # fi
+
+    # case "$2" in
+    # "android" | "linux" | "macos" | "ios")
+    #     ;;
+    # *)
+    #     echo "❌ Error: $2 is not a supported target. ❌"
+    #     supported_targets="
+    #         Supported targets are:
+    #             - linux 
+    #             - android
+    #             - macos
+    #             - ios 
+    #     "
+    #     echo "$supported_targets"
+    #     exit 1
+    #     ;;
+    # esac
+
+
+    # target=$2   
+    # export target
+    # . "./$target.sh"
 }
 
 bdkrepbuild__help_build(){
