@@ -9,8 +9,6 @@ RUN apt-get update && apt-get install -y \
   curl \
   unzip
 
-
-
 # Install Rust compiler (using rustup)
 RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
 
