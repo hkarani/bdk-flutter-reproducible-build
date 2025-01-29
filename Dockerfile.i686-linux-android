@@ -1,0 +1,94 @@
+FROM ubuntu:latest
+
+# Install dependencies for Rust development
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  pkg-config \
+  libssl-dev \
+  jq \
+  curl \
+  unzip \
+  git \
+  zip \
+  wget \
+  xz-utils \
+  clang \
+  cmake \
+  libgtk-3-dev \
+  libstdc++6 \
+  ca-certificates \
+  fonts-dejavu \
+  bash-completion \
+  openjdk-21-jdk \
+  && apt-get clean
+
+# Install Rust compiler (using rustup)
+RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
+
+ENV PATH="/root/.cargo/bin:$PATH"
+
+WORKDIR /opt
+RUN git clone https://github.com/flutter/flutter.git -b stable --depth 1
+ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:$PATH"
+RUN flutter doctor
+
+# Install Android SDK
+WORKDIR /usr/lib
+RUN mkdir -p android-sdk
+WORKDIR /usr/lib/android-sdk
+RUN curl -sSL https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -o cmdline-tools.zip \
+  && unzip cmdline-tools.zip -d cmdline-tools \
+  && mv cmdline-tools/cmdline-tools cmdline-tools/latest \
+  && rm cmdline-tools.zip
+
+# Set up Android SDK environment variables
+ENV ANDROID_HOME="/usr/lib/android-sdk"
+ENV PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+# Verify Java installation
+RUN java -version && javac -version
+# Accept Android SDK licenses
+RUN yes | sdkmanager --licenses
+
+# Install Android NDK
+RUN sdkmanager --install "ndk;21.3.6528147"
+
+# Set up NDK environment variables
+ENV ANDROID_NDK_HOME="$ANDROID_HOME/ndk/21.3.6528147"
+ENV PATH="$ANDROID_NDK_HOME:$PATH"
+# Copy the folder from root
+COPY src/* /app/
+
+# Change directory
+WORKDIR /app/cargokit/build_tool/bin
+
+RUN pwd
+
+RUN ls
+
+RUN mkdir -p ~/lib/linux
+
+RUN mkdir -p  ~/release/linux
+
+RUN export CC=aarch64-linux-gnu-gcc
+RUN export AR=aarch64-linux-gnu-ar
+RUN export RUSTFLAGS="-C linker=aarch64-linux-gnu-gcc"
+
+RUN CARGOKIT_ROOT_PROJECT_DIR="/app/*/" \
+CARGOKIT_TARGET_PLATFORMS="android-x86" \
+CARGOKIT_CONFIGURATION="release" \
+CARGOKIT_TARGET_TEMP_DIR="/root/lib/linux" \
+CARGOKIT_MANIFEST_DIR="/app/rust" \
+CARGOKIT_OUTPUT_DIR="/root/release/linux" \
+CARGOKIT_MIN_SDK_VERSION="16" \
+CARGOKIT_NDK_VERSION="21.3.6528147" \
+CARGOKIT_SDK_DIR="/usr/lib/android-sdk" \
+CARGOKIT_JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64" \
+dart run build_tool build-gradle
+
+# Run cargo ndk with aarch64 target
+WORKDIR /root/lib/linux/i686-linux-android/release
+
+
+RUN ls
+# Run a tiny program to make the build runnable
+CMD ["sleep", "infinity"]
