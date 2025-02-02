@@ -71,10 +71,10 @@ fi
 # Define target architectures
 
 echo "Starting  $target build..."
-DOCKER_BUILDKIT=0 docker buildx build --platform linux/arm64 -t build-$target -f Dockerfile.$target .
+DOCKER_BUILDKIT=0 docker build -t build-$target -f Dockerfile.$target .
 echo "Build completed!"
 echo "Running build-$target docker"
-container_id=$(docker run --platform linux/arm64 -d "build-$target") || { echo "Failed to run container"; exit 1; }
+container_id=$(docker run -d "build-$target") || { echo "Failed to run container"; exit 1; }
 current_dir=$(pwd)
 folder_name="lib/$target"
 
@@ -83,14 +83,13 @@ if [ -d "$folder_name" ]; then
 fi
 mkdir "$folder_name"
 
-architecture="x86_64-unknown-linux-gnu"
+architecture="aarch64-unknown-linux-gnu"
 
 if [ ! -z "$lib_name" ]; then
-  a_file="root/release/linux/lib$lib_name.so"
+  a_file="/root/lib/linux/aarch64-unknown-linux-gnu/release/lib$lib_name.so"
 else 
-  a_file="root/release/linux/lib$package_name.so"
+  a_file="/root/lib/linux/aarch64-unknown-linux-gnu/release/lib$package_name.so"
 fi
-
 
 full_path="/$current_dir/$folder_name"
 docker cp -a $container_id:$a_file "$full_path/lib$package_name-$package_version.so"
