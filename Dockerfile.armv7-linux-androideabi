@@ -27,13 +27,11 @@ RUN apt-get update && apt-get install -y \
 
 # Install Rust compiler (using rustup)
 RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
-
 ENV PATH="/root/.cargo/bin:$PATH"
 
-WORKDIR /opt
-RUN git clone https://github.com/flutter/flutter.git -b stable --depth 1
-ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:$PATH"
-RUN flutter doctor
+# Install cargo-ndk
+RUN cargo install cargo-ndk
+
 
 # Install Android SDK
 WORKDIR /usr/lib
@@ -47,58 +45,40 @@ RUN curl -sSL https://dl.google.com/android/repository/commandlinetools-linux-94
 # Set up Android SDK environment variables
 ENV ANDROID_HOME="/usr/lib/android-sdk"
 ENV PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
-# Verify Java installation
-RUN java -version && javac -version
+
 # Accept Android SDK licenses
 RUN yes | sdkmanager --licenses
 
 # Install Android NDK
-RUN sdkmanager --install "ndk;21.3.6528147"
+RUN sdkmanager --install "ndk;25.1.8937393"
 
 # Set up NDK environment variables
-ENV ANDROID_NDK_HOME="$ANDROID_HOME/ndk/21.3.6528147"
+ENV ANDROID_NDK_HOME="$ANDROID_HOME/ndk/25.1.8937393"
 ENV PATH="$ANDROID_NDK_HOME:$PATH"
 
-# Set Android NDK Home
-ENV ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.3.6528147
-
-# Export Rust cross-compilation tools using Android NDK default paths
-RUN export CC=aarch64-linux-gnu-gcc
-RUN export AR=aarch64-linux-gnu-ar
-RUN export RUSTFLAGS="-C linker=aarch64-linux-gnu-gcc"
-
-# Copy the folder from root
-COPY src/* /app/
-
-# # Change directory
-WORKDIR /app/cargokit/build_tool/bin
-
-
-RUN mkdir -p ~/lib/linux
-
-RUN mkdir -p  ~/release/linux
-
+# Configure Rust cross-compilation
 ENV CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER=clang
 ENV CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_RUSTFLAGS="-C link-arg=-fuse-ld=lld"
 
+# Copy the source code into the container
 
+COPY src/* /app/
 
+WORKDIR /app/rust
 
-RUN CARGOKIT_ROOT_PROJECT_DIR="/app/*/" \
-CARGOKIT_TARGET_PLATFORMS="android-arm" \
-CARGOKIT_CONFIGURATION="release" \
-CARGOKIT_TARGET_TEMP_DIR="/root/lib/linux" \
-CARGOKIT_MANIFEST_DIR="/app/rust" \
-CARGOKIT_OUTPUT_DIR="/root/release/linux" \
-CARGOKIT_MIN_SDK_VERSION="16" \
-CARGOKIT_NDK_VERSION="21.3.6528147" \
-CARGOKIT_SDK_DIR="/usr/lib/android-sdk" \
-CARGOKIT_JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64" \
-dart run build_tool build-gradle
+RUN rustup target install armv7-linux-androideabi
+# Install dependencies and build Rust project with cargo-ndk
+RUN mkdir -p /root/release/linux && \
+    cargo ndk -t armeabi-v7a build --release 
+    
 
-WORKDIR /root/lib/linux/armv7-linux-androideabi/release
+# WORKDIR /root/lib/linux/armv7-linux-androideabi/release
 
+# List the files to verify the build
+WORKDIR /app/rust/target/armv7-linux-androideabi/release
+
+RUN cp -r /app/rust/target/armv7-linux-androideabi/release/* /root/release/linux/
 
 RUN ls
-# Run a tiny program to make the build runnable
+# Keep the container running
 CMD ["sleep", "infinity"]

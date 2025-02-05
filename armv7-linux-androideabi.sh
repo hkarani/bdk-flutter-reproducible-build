@@ -71,7 +71,7 @@ fi
 # Define target architectures
 
 echo "Starting  $target build..."
-DOCKER_BUILDKIT=0 docker build --memory=6g -t build-$target -f Dockerfile.$target .
+DOCKER_BUILDKIT=0 docker build -t build-$target -f Dockerfile.$target .
 echo "Build completed!"
 echo "Running build-$target docker"
 container_id=$(docker run -d "build-$target") || { echo "Failed to run container"; exit 1; }
@@ -86,9 +86,9 @@ mkdir "$folder_name"
 architecture="x86_64-unknown-linux-gnu"
 
 if [ ! -z "$lib_name" ]; then
-  a_file="/root/lib/linux/android-arm/release/lib$lib_name.so"
+  a_file="/root/release/linux/lib$lib_name.so"
 else 
-  a_file="/root/lib/linux/android-arm/release/lib$package_name.so"
+  a_file="/root/release/linux/lib$package_name.so"
 fi
 
 
