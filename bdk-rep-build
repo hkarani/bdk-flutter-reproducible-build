@@ -86,9 +86,10 @@ bdkrepbuild__build() {
     esac
 
 
-    target=$3   
+    target=$3
+    library=$2   
     export target
-    . "./$target.sh"
+    . "./$target.sh" "$library"
     # echo "Building $3 binariy for $2"
 }
 
