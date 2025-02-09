@@ -1,3 +1,4 @@
+#!/bin/bash
 # #1
 # x86_64-unknown-linux-gnu[rust] = 'x86_64-unknown-linux-gnu'
 # x86_64-unknown-linux-gnu[flutter] = 'linux-x64'

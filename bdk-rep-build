@@ -54,7 +54,7 @@ bdkrepbuild__build() {
                     git pull origin "$(git rev-parse --abbrev-ref HEAD)"
                 else
                     # echo "$lib_folder is already up to date."
-                    continue
+                    return
                 fi
             else
                 echo "Not a Git repository. Removing and re-cloning..."
