@@ -19,6 +19,61 @@ bdkrepbuild__build() {
 
     case "$2" in
     "bdk-flutter" | "boltz-dart" | "lwk-dart")
+        parent_folder="$(pwd)/src"
+        lib_folder="$(pwd)/src/$2"
+
+        supported_libraries_keys=("bdk-flutter" "boltz-dart" "lwk-dart")
+        supported_libraries_urls=("https://github.com/LtbLightning/bdk-flutter.git" "https://github.com/SatoshiPortal/boltz-dart.git" "https://github.com/SatoshiPortal/lwk-dart.git")
+
+        # Function to get the repository URL
+        get_repo_url() {
+            local library_name="$1"
+            for i in "${!supported_libraries_keys[@]}"; do
+                if [[ "${supported_libraries_keys[i]}" == "$library_name" ]]; then
+                    echo "${supported_libraries_urls[i]}"
+                    return
+                fi
+            done
+            echo "Library not found"
+            exit 1
+        }
+
+        repo_url=$(get_repo_url $2) 
+        echo "Your repo url is $repo_url"
+
+        if [[ -d "$lib_folder" ]]; then
+            echo "Folder exists!"
+
+            if [[ -d "$lib_folder/.git" ]]; then
+                echo "Checking for updates in $lib_folder..."
+                cd "$lib_folder" || exit 1
+                git fetch origin
+                # Check if local branch is behind
+                if [[ $(git status -uno | grep "Your branch is behind") ]]; then
+                    echo "Updating $lib_folder..."
+                    git pull origin "$(git rev-parse --abbrev-ref HEAD)"
+                else
+                    # echo "$lib_folder is already up to date."
+                    continue
+                fi
+            else
+                echo "Not a Git repository. Removing and re-cloning..."
+                rm -rf "$lib_folder"
+                cd $parent_folder
+                git clone "$repo_url"
+            fi
+            cd ../
+        else
+            echo "Folder does not exist."
+            echo "Cloning git repo..."
+            cd $parent_folder
+            for subfolder in "$parent_folder"/*/; do
+                if [[ -d "$subfolder" ]]; then
+                    rm -rf "$subfolder" 
+                fi
+            done
+            git clone "$repo_url"
+        fi
         ;;
     *)
         echo "❌ Error: $2 is not a supported library. ❌"
@@ -85,7 +140,7 @@ bdkrepbuild__build() {
         ;;
     esac
 
-
+    cd ../
     target=$3
     library=$2   
     export target
