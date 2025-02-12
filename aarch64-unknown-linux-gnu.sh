@@ -12,6 +12,7 @@ fi
 
 # Function to extract the package version from Cargo.toml
   # Use grep to find the line containing 'version' in Cargo.toml
+library=$1
 cd src/*/rust
 
 
@@ -76,12 +77,12 @@ echo "Build completed!"
 echo "Running build-$target docker"
 container_id=$(docker run -d "build-$target") || { echo "Failed to run container"; exit 1; }
 current_dir=$(pwd)
-folder_name="lib/$target"
+folder_name="release/linux/$1/$target"
 
 if [ -d "$folder_name" ]; then
     rm -rf "$folder_name"
 fi
-mkdir "$folder_name"
+mkdir -p "$folder_name"
 
 architecture="aarch64-unknown-linux-gnu"
 

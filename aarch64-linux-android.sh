@@ -76,19 +76,19 @@ echo "Build completed!"
 echo "Running build-$target docker"
 container_id=$(docker run -d "build-$target") || { echo "Failed to run container"; exit 1; }
 current_dir=$(pwd)
-folder_name="lib/$target"
+folder_name="release/$1/android/$target"
 
 if [ -d "$folder_name" ]; then
     rm -rf "$folder_name"
 fi
-mkdir "$folder_name"
+mkdir -p "$folder_name"
 
 architecture="x86_64-unknown-linux-gnu"
 
 if [ ! -z "$lib_name" ]; then
-  a_file="/root/lib/linux/aarch64-linux-android/release/lib$lib_name.so"
+  a_file="/root/release/android/aarch64-linux-android/arm64-v8a/lib$lib_name.so"
 else 
-  a_file="/root/lib/linux/aarch64-linux-android/release/lib$package_name.so"
+  a_file="/root/release/android/aarch64-linux-android/arm64-v8a/lib$package_name.so"
 fi
 
 

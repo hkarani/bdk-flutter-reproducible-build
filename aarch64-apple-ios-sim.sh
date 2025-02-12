@@ -9,10 +9,10 @@ exec env \
   CARGOKIT_ROOT_PROJECT_DIR="$BASE_PATH/src/$library" \
   CARGOKIT_DARWIN_ARCHS="arm64" \
   CARGOKIT_CONFIGURATION="release" \
-  CARGOKIT_TARGET_TEMP_DIR="$BASE_PATH/lib/macos/aarch64-apple-ios-sim" \
+  CARGOKIT_TARGET_TEMP_DIR="$BASE_PATH/lib/$1/ios/aarch64-apple-ios-sim" \
   CARGOKIT_DARWIN_PLATFORM_NAME="iphoneos" \
   CARGOKIT_MANIFEST_DIR="$BASE_PATH/src/$library/rust" \
-  CARGOKIT_OUTPUT_DIR="$BASE_PATH/release/ios/aarch64-apple-ios-sim" \
+  CARGOKIT_OUTPUT_DIR="$BASE_PATH/release/$1/ios/aarch64-apple-ios-sim" \
   dart run build_tool build-pod
 
 echo "Build completed"

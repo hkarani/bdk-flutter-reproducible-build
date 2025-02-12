@@ -7,9 +7,9 @@ cd src/*/cargokit/build_tool/bin
 export CARGOKIT_ROOT_PROJECT_DIR="$BASE_PATH/src/$library"
 export CARGOKIT_DARWIN_ARCHS="arm64"
 export CARGOKIT_CONFIGURATION="release"
-export CARGOKIT_TARGET_TEMP_DIR="$BASE_PATH/lib/macos"
+export CARGOKIT_TARGET_TEMP_DIR="$BASE_PATH/lib/$1/macos/aarch64-apple-darwin"
 export CARGOKIT_DARWIN_PLATFORM_NAME="macosx"
 export CARGOKIT_MANIFEST_DIR="$BASE_PATH/src/$library/rust"
-export CARGOKIT_OUTPUT_DIR="$BASE_PATH/release/mac/aarch64-apple-darwin"
+export CARGOKIT_OUTPUT_DIR="$BASE_PATH/release/$1/macos/aarch64-apple-darwin"
 
 dart run build_tool build-pod
