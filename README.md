@@ -13,7 +13,8 @@
 
 Binaries you downloaded online and are happily shipping might not steal your users' wallet seed phrases or run malware, but the fact is unaudited binaries are significantly harder to inspect, making supply chain attacks a real risk.
 
-With BDK Build Tool, you can build and verify your own binaries, to be ensure that what you ship is exactly what you expect.
+With BDK Build Tool, you can build and verify your own binaries, to be ensure that what you ship is exactly what you expect. All this while handling all the 
+cross-compiling troubles for you.
 
 ## How It Works
     
@@ -22,6 +23,25 @@ With BDK Build Tool, you can build and verify your own binaries, to be ensure th
 - Prepares artifacts for distribution with confidence.
 
 ## Get Started
+### Requirements
+
+BDK Build Tool reverse-engineers Cargokit magic to run on top docker for Android and Linux targets. For macos and ios targets, you'll need a mac to build.
+
+**Android and Linux targets**
+- Docker
+- Dart and Flutter
+- Git
+
+**Macos and IOS targets**
+- Dart and Flutter
+- Rustup(NOT INSTALLED VIA HOMEBRE) Unlink `brew unlink rust` Run `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` for Cargokit to detect rustup
+- Git
+- Xcode(for ios)
+
+
+
+
+BDK Build Tool needs
 
  ____  ____  _  __     ____  _____ ____       ____  _   _ ___ _     ____  
 | __ )|  _ \| |/ /    |  _ \| ____|  _ \     | __ )| | | |_ _| |   |  _ \ 
