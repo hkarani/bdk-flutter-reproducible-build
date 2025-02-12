@@ -23,7 +23,7 @@ cross-compiling troubles for you.
 - Prepares artifacts for distribution with confidence.
 
 ## Get Started
-### Requirements
+## What you'll Need
 
 BDK Build Tool reverse-engineers Cargokit magic to run on top docker for Android and Linux targets. For macos and ios targets, you'll need a mac to build.
 
@@ -32,38 +32,13 @@ BDK Build Tool reverse-engineers Cargokit magic to run on top docker for Android
 - Dart and Flutter
 - Git
 
-**Macos and IOS targets**
+**MacOs and iOS targets**
 - Dart and Flutter
-- Rustup(NOT INSTALLED VIA HOMEBRE) Unlink `brew unlink rust` Run `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` for Cargokit to detect rustup
+- Rustup(NOT INSTALLED VIA HOMEBRE) RUn `brew unlink rust` to unlink, Run `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` for Cargokit to detect rustup
 - Git
 - Xcode(for ios)
 
-
-
-
-BDK Build Tool needs
-
- ____  ____  _  __     ____  _____ ____       ____  _   _ ___ _     ____  
-| __ )|  _ \| |/ /    |  _ \| ____|  _ \     | __ )| | | |_ _| |   |  _ \ 
-|  _ \| | | | ' /_____| |_) |  _| | |_) |____|  _ \| | | || || |   | | | |
-| |_) | |_| | . \_____|  _ <| |___|  __/_____| |_) | |_| || || |___| |_| |
-|____/|____/|_|\_\    |_| \_\_____|_|        |____/ \___/|___|_____|____/ 
-
-        Cross-compile and verify reproducible builds for bdk-rust library.
-            * To use with : BDK-Flutter, LWK-Dart, BOLTZ-dart
-            * Targeting: Linux, Android, MacOS, iOS  
-USAGE
-    $ bdk-rep-build [COMMAND]
-    $ bdk-rep-build help [COMMAND]
-
-COMMANDS
-    help                show help
-    
-    verify          verify build against release
-    build           build artifacts for a target  
-
-
-## USAGE
+## How to Use
 
 > Clone the library you like to test into the SRC folder
 > chmod +x bdk-rep-build
