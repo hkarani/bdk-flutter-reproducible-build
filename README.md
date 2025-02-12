@@ -1,6 +1,11 @@
-# BDK-REP-BUILD
+## BDK Build Tool 🛠️  
 
-BDK Build Tool is a CLI utility designed to build and verify binaries for: bdk-flutter (Bitcoin Dev Kit for Flutter), lwk-dart (Lightning Wallet Kit for Dart, Boltz-dart (Boltz Swap integration for Dart)
+**BDK Build Tool** is a CLI utility designed to **build and verify binaries** for:  
+
+- **[bdk-flutter](https://github.com/LtbLightning/bdk-flutter.git)** – Bitcoin Dev Kit for Flutter  
+- **[lwk-dart](https://github.com/SatoshiPortal/lwk-dart.git)** – Lightning Wallet Kit for Dart  
+- **[boltz-dart](https://github.com/SatoshiPortal/boltz-dart.git)** – Boltz Swap integration for Dart  
+
 
 ## Why Use BDK Build Tool?
 
@@ -10,17 +15,13 @@ Binaries you downloaded online and are happily shipping might not steal your use
 
 With BDK Build Tool, you can build and verify your own binaries, to be ensure that what you ship is exactly what you expect.
 
-  * 🔍 Ensures reproducible builds – Prevents unexpected changes in compiled binaries.
-  * 🔑 Verifies integrity – Confirms that binaries match expected hashes.
-  * 📦 Cross-platform support – Builds for multiple architectures and OS targets.
+## How It Works
+    
+- Compiles your own binaries for specified targets on your machine.
+- Verifies local binaries with published builds.
+- Prepares artifacts for distribution with confidence.
 
-# How It Works
-
-    * Compiles source code into binaries for specified targets.
-    * Verifies hashes against known good values.
-    * Prepares artifacts for distribution with confidence.
-
-# Get Started
+## Get Started
 
  ____  ____  _  __     ____  _____ ____       ____  _   _ ___ _     ____  
 | __ )|  _ \| |/ /    |  _ \| ____|  _ \     | __ )| | | |_ _| |   |  _ \ 
