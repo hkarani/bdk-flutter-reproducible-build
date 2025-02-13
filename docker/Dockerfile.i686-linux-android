@@ -28,7 +28,7 @@ RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:$PATH"
 
 WORKDIR /opt
-RUN git clone https://github.com/flutter/flutter.git -b stable --depth 1
+RUN git clone https://github.com/flutter/flutter.git -b master --depth 1
 ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:$PATH"
 RUN flutter doctor
 
@@ -86,7 +86,7 @@ CARGOKIT_JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64" \
 dart run build_tool build-gradle
 
 # Run cargo ndk with aarch64 target
-WORKDIR /root/lib/linux/i686-linux-android/release
+WORKDIR /root/release/linux/x86
 
 
 RUN ls

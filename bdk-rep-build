@@ -3,7 +3,7 @@
 set -e
 
 bdkrepbuild__build() {
-
+    VERSION=$4
     # check if the library to be built has been passed to the script
     if [ -z "$2" ]; then
         echo "❌ You did not specify a library to build! ❌"
@@ -60,8 +60,8 @@ bdkrepbuild__build() {
                 rm -rf "$lib_folder"
                 cd $parent_folder
                 git clone "$repo_url"
+                cd $lib_folder
             fi
-            cd ../
         else
             echo "Folder does not exist."
             echo "Cloning git repo..."
@@ -72,8 +72,26 @@ bdkrepbuild__build() {
                 fi
             done
             git clone "$repo_url"
+            cd $lib_folder
+        fi
+        ##Check out the passed tag version
+        git fetch --tags > /dev/null 2>&1
+        VALID_TAGS=$(git tag)
+
+        if [[ -n "$VERSION" ]]; then
+        if ! echo "$VALID_TAGS" | grep -q "^$VERSION$"; then
+            echo "❌ Invalid release tag '$VERSION' provided!"
+            echo "✅ The following are valid release tags:"
+            echo "$VALID_TAGS"
+            exit 1
+        fi
+            echo "You're building repo for version $VERSION"
+        else
+            echo "No version specified. Skipping version validation."
         fi
         ;;
+       
+
     *)
         echo "❌ Error: $2 is not a supported library. ❌"
         supported_libraries="
@@ -139,7 +157,7 @@ bdkrepbuild__build() {
         ;;
     esac
 
-    cd ../
+    cd ../../
     target=$3
     library=$2   
     export target

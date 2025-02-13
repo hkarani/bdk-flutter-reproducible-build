@@ -77,7 +77,9 @@ echo "Build completed!"
 echo "Running build-$target docker"
 container_id=$(docker run -d "build-$target") || { echo "Failed to run container"; exit 1; }
 current_dir=$(pwd)
-folder_name="release/linux/$1/$target"
+library=$1
+VERSION=${2:-"latest"}
+folder_name="release/$library/$VERSION/linux/$target"
 
 if [ -d "$folder_name" ]; then
     rm -rf "$folder_name"
