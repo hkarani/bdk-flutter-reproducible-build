@@ -141,24 +141,27 @@ bdkrepbuild__build() {
         done
 
     elif [ "$target" == "android" ]; then
-        android_targets=("aarch64-linux-android" "armv7-linux-androideabi" "x86_64-linux-android")
-        for target in "${android_targets[@]}"; do
-            echo "Starting $target build"
-            . "./build-scripts/$target.sh" "$library" "$VERSION"
+        android_targets=("aarch64-linux-android" "armv7-linux-androideabi" "i686-linux-android" "x86_64-linux-android")
+        for trgt in "${android_targets[@]}"; do
+            echo "Starting $trgt build"
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+            cd ../../../../../
         done
 
     elif [ "$target" == "linux" ]; then
-        linux_targets=("x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu" "armv7-unknown-linux-gnueabihf")
-        for target in "${linux_targets[@]}"; do
-            echo "Starting $target build"
-            . "./build-scripts/$target.sh" "$library" "$VERSION"
+        linux_targets=("x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu")
+        for trgt in "${linux_targets[@]}"; do
+            echo "Starting $trgt build"
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+            cd ../../../../../
         done
 
     elif [ "$target" == "macos" ]; then
         macos_targets=("x86_64-apple-darwin" "aarch64-apple-darwin")
-        for target in "${macos_targets[@]}"; do
-            echo "Starting $target build"
-            . "./build-scripts/$target.sh" "$library" "$VERSION"
+        for trgt in "${macos_targets[@]}"; do
+            echo "Starting $trgt build"
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+            cd ../../../../../
         done
 
     else
