@@ -144,16 +144,17 @@ bdkrepbuild__build() {
         android_targets=("aarch64-linux-android" "armv7-linux-androideabi" "i686-linux-android" "x86_64-linux-android")
         for trgt in "${android_targets[@]}"; do
             echo "Starting $trgt build"
+            target=$trgt
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
-            cd ../../../../../
         done
 
     elif [ "$target" == "linux" ]; then
+        echo "You're building for linux"
         linux_targets=("x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu")
         for trgt in "${linux_targets[@]}"; do
+            target=$trgt
             echo "Starting $trgt build"
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
-            cd ../../../../../
         done
 
     elif [ "$target" == "macos" ]; then
@@ -194,7 +195,6 @@ bdkrepbuild__build() {
             exit 1
             ;;
         esac
-        export target
         . "./build-scripts/$target.sh" "$library" "$VERSION"
     fi
 }
