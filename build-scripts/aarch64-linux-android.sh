@@ -88,9 +88,9 @@ mkdir -p "$folder_name"
 architecture="x86_64-unknown-linux-gnu"
 
 if [ ! -z "$lib_name" ]; then
-  a_file="/root/release/android/aarch64-linux-android/arm64-v8a/lib$lib_name.so"
+  a_file="/root/release/output_binaries/lib$lib_name.so"
 else 
-  a_file="/root/release/android/aarch64-linux-android/arm64-v8a/lib$package_name.so"
+  a_file="/root/release/output_binaries/lib$package_name.so"
 fi
 
 

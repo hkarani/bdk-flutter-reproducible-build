@@ -69,7 +69,6 @@ RUN mkdir -p ~/lib/linux
 
 RUN mkdir -p  ~/release/linux
 
-
 RUN CARGOKIT_ROOT_PROJECT_DIR="/app/*/" \
 CARGOKIT_TARGET_PLATFORMS="android-x64" \
 CARGOKIT_CONFIGURATION="release" \
@@ -82,10 +81,11 @@ CARGOKIT_SDK_DIR="/usr/lib/android-sdk" \
 CARGOKIT_JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64" \
 dart run build_tool build-gradle
 
-# Run cargo ndk with aarch64 target
-WORKDIR /root/release/linux/x86_64-linux-android/release
+RUN mkdir -p ~/release/output_binaries
+ENV SOURCE_DIR="/root/release/linux"
+ENV DEST_DIR="/root/release/output_binaries"
 
+RUN find "$SOURCE_DIR" -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
 
-RUN ls
 # Run a tiny program to make the build runnable
 CMD ["sleep", "infinity"]

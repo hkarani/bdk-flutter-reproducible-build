@@ -61,12 +61,12 @@ CARGOKIT_MANIFEST_DIR="/app/rust" \
 CARGOKIT_OUTPUT_DIR="/root/release/linux" \
 dart run build_tool build-cmake
 
+RUN mkdir -p ~/release/output_binaries
+ENV SOURCE_DIR="/root/release/linux"
+ENV DEST_DIR="/root/release/output_binaries"
 
-# Run cargo ndk with aarch64 target
-WORKDIR /root/release/linux
+RUN find "$SOURCE_DIR" -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
 
-RUN pwd
 
-RUN ls
 # Run a tiny program to make the build runnable
 CMD ["sleep", "infinity"]

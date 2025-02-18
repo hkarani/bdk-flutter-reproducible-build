@@ -79,6 +79,11 @@ WORKDIR /app/rust/target/armv7-linux-androideabi/release
 
 RUN cp -r /app/rust/target/armv7-linux-androideabi/release/* /root/release/linux/
 
-RUN ls
+RUN mkdir -p ~/release/output_binaries
+ENV SOURCE_DIR="/app/rust/target/armv7-linux-androideabi/release/"
+ENV DEST_DIR="/root/release/output_binaries"
+
+RUN find "$SOURCE_DIR" -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
+
 # Keep the container running
 CMD ["sleep", "infinity"]

@@ -89,9 +89,9 @@ mkdir -p "$folder_name"
 architecture="aarch64-unknown-linux-gnu"
 
 if [ ! -z "$lib_name" ]; then
-  a_file="/root/lib/linux/aarch64-unknown-linux-gnu/release/lib$lib_name.so"
+  a_file="/root/release/output_binaries/lib$lib_name.so"
 else 
-  a_file="/root/lib/linux/aarch64-unknown-linux-gnu/release/lib$package_name.so"
+  a_file="/root/release/output_binaries/lib$package_name.so"
 fi
 
 full_path="/$current_dir/$folder_name"
