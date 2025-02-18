@@ -90,7 +90,7 @@ bdkrepbuild__build() {
             git checkout $VERSION
             echo "You're building repo for version $VERSION"
         else
-            echo "No version specified. Skipping version validation."
+            echo "No version specified. You're buildng at the lastest commit of $lib_folder."
         fi
         ;;
        
@@ -136,6 +136,7 @@ bdkrepbuild__build() {
         ios_targets=("aarch64-apple-ios" "x86_64-apple-ios" "aarch64-apple-ios-sim")
         for trgt in "${ios_targets[@]}"; do
             echo "Starting $trgt build"
+            . ./configs.sh
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
             cd ../../../../../
         done
@@ -145,6 +146,7 @@ bdkrepbuild__build() {
         for trgt in "${android_targets[@]}"; do
             echo "Starting $trgt build"
             target=$trgt
+            . ./configs.sh
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
         done
 
@@ -154,6 +156,7 @@ bdkrepbuild__build() {
         for trgt in "${linux_targets[@]}"; do
             target=$trgt
             echo "Starting $trgt build"
+            . ./configs.sh
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
         done
 
@@ -161,6 +164,7 @@ bdkrepbuild__build() {
         macos_targets=("x86_64-apple-darwin" "aarch64-apple-darwin")
         for trgt in "${macos_targets[@]}"; do
             echo "Starting $trgt build"
+            . ./configs.sh
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
             cd ../../../../../
         done
@@ -195,6 +199,7 @@ bdkrepbuild__build() {
             exit 1
             ;;
         esac
+        . ./configs.sh
         . "./build-scripts/$target.sh" "$library" "$VERSION"
     fi
 }
