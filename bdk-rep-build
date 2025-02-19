@@ -4,6 +4,8 @@ set -e
 
 bdkrepbuild__build() {
     VERSION=$4
+    target=$3
+    library=$2 
     # check if the library to be built has been passed to the script
     if [ -z "$2" ]; then
         echo "❌ You did not specify a library to build! ❌"
@@ -85,13 +87,13 @@ bdkrepbuild__build() {
             echo "$VALID_TAGS"
             exit 1
         fi
+            git checkout $VERSION
             echo "You're building repo for version $VERSION"
         else
-            echo "No version specified. Skipping version validation."
+            echo "No version specified. You're buildng at the lastest commit of $lib_folder."
         fi
         ;;
        
-
     *)
         echo "❌ Error: $2 is not a supported library. ❌"
         supported_libraries="
@@ -126,43 +128,80 @@ bdkrepbuild__build() {
         "aarch64-apple-darwin" "aarch64-apple-ios" "aarch64-apple-ios-sim"
         "x86_64-apple-ios"
     )
-
     
-    case "$3" in
-        "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu" | \
-        "armv7-linux-androideabi" | "aarch64-linux-android" | "i686-linux-android" | \
-        "x86_64-linux-android" | "x86_64-pc-windows-msvc" | "x86_64-apple-darwin" | \
-        "aarch64-apple-darwin" | "aarch64-apple-ios" | "aarch64-apple-ios-sim" | \
-        "x86_64-apple-ios")
-        ;;
-    *)
-        echo "❌ Error: $3 is not a supported build target. ❌"
-        supported_targets="
-            Supported targets are:
-                -x86_64-unknown-linux-gnu 
-                -aarch64-unknown-linux-gnu
-                -armv7-linux-androideabi 
-                -aarch64-linux-android 
-                -i686-linux-android  
-                -x86_64-linux-android 
-                -x86_64-pc-windows-msvc 
-                -x86_64-apple-darwin
-                -aarch64-apple-darwin 
-                -aarch64-apple-ios 
-                -aarch64-apple-ios-sim 
-                -x86_64-apple-ios
-        "
-        echo "$supported_targets"
-        exit 1
-        ;;
-    esac
+    cd ../../  
+    pwd
 
-    cd ../../
-    target=$3
-    library=$2   
-    export target
-    . "./build-scripts/$target.sh" "$library"
-    # echo "Building $3 binariy for $2"
+    if [ "$target" == "ios" ]; then
+        ios_targets=("aarch64-apple-ios" "x86_64-apple-ios" "aarch64-apple-ios-sim")
+        for trgt in "${ios_targets[@]}"; do
+            echo "Starting $trgt build"
+            . ./configs.sh
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+            cd ../../../../../
+        done
+
+    elif [ "$target" == "android" ]; then
+        android_targets=("aarch64-linux-android" "armv7-linux-androideabi" "i686-linux-android" "x86_64-linux-android")
+        for trgt in "${android_targets[@]}"; do
+            echo "Starting $trgt build"
+            target=$trgt
+            . ./configs.sh
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+        done
+
+    elif [ "$target" == "linux" ]; then
+        echo "You're building for linux"
+        linux_targets=("x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu")
+        for trgt in "${linux_targets[@]}"; do
+            target=$trgt
+            echo "Starting $trgt build"
+            . ./configs.sh
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+        done
+
+    elif [ "$target" == "macos" ]; then
+        macos_targets=("x86_64-apple-darwin" "aarch64-apple-darwin")
+        for trgt in "${macos_targets[@]}"; do
+            echo "Starting $trgt build"
+            . ./configs.sh
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+            cd ../../../../../
+        done
+
+    else
+        # For other targets, run the normal build process
+        case "$3" in
+            "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu" | \
+            "armv7-linux-androideabi" | "aarch64-linux-android" | "i686-linux-android" | \
+            "x86_64-linux-android" | "x86_64-pc-windows-msvc" | "x86_64-apple-darwin" | \
+            "aarch64-apple-darwin" | "aarch64-apple-ios" | "aarch64-apple-ios-sim" | \
+            "x86_64-apple-ios")
+            ;;
+        *)
+            echo "❌ Error: $3 is not a supported build target. ❌"
+            supported_targets="
+                Supported targets are:
+                    -x86_64-unknown-linux-gnu 
+                    -aarch64-unknown-linux-gnu
+                    -armv7-linux-androideabi 
+                    -aarch64-linux-android 
+                    -i686-linux-android  
+                    -x86_64-linux-android 
+                    -x86_64-pc-windows-msvc 
+                    -x86_64-apple-darwin
+                    -aarch64-apple-darwin 
+                    -aarch64-apple-ios 
+                    -aarch64-apple-ios-sim 
+                    -x86_64-apple-ios
+            "
+            echo "$supported_targets"
+            exit 1
+            ;;
+        esac
+        . ./configs.sh
+        . "./build-scripts/$target.sh" "$library" "$VERSION"
+    fi
 }
 
 bdkrepbuild__help_build(){

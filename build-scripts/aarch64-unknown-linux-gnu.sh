@@ -72,7 +72,7 @@ fi
 # Define target architectures
 
 echo "Starting  $target build..."
-DOCKER_BUILDKIT=0 docker build -t build-$target -f docker/Dockerfile.$target .
+DOCKER_BUILDKIT=0 docker build -q -t build-$target -f docker/Dockerfile.$target .
 echo "Build completed!"
 echo "Running build-$target docker"
 container_id=$(docker run -d "build-$target") || { echo "Failed to run container"; exit 1; }
@@ -89,15 +89,18 @@ mkdir -p "$folder_name"
 architecture="aarch64-unknown-linux-gnu"
 
 if [ ! -z "$lib_name" ]; then
-  a_file="/root/lib/linux/aarch64-unknown-linux-gnu/release/lib$lib_name.so"
+  a_file="/root/release/output_binaries/lib$lib_name.so"
 else 
-  a_file="/root/lib/linux/aarch64-unknown-linux-gnu/release/lib$package_name.so"
+  a_file="/root/release/output_binaries/lib$package_name.so"
 fi
 
 full_path="/$current_dir/$folder_name"
-docker cp -a $container_id:$a_file "$full_path/lib$package_name-$package_version.so"
-echo "File copied"
-docker kill $container_id
-echo "build-$target container stoppped"
+docker cp -a $container_id:$a_file "$full_path/lib$package_name-$package_version.so" || { 
+    echo "Error: Failed to copy file from container." >&2
+    exit 1
+}
+
+docker kill $container_id > /dev/null 2>&1
+
 
 echo "Build completed! Library in lib/linux folder."

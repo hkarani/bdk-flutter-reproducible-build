@@ -6,3 +6,4 @@ release/*
 !src/.gitkeep
 !lib/.gitkeep
 !release/.gitkeep
+!release/published.gitkeep

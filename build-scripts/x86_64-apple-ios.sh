@@ -6,7 +6,7 @@ VERSION=${2:-"latest"}
 cd src/*/cargokit/build_tool/bin || { echo "Failed to change directory"; exit 1; }
 
 export IPHONEOS_DEPLOYMENT_TARGET=10.0
-exec env \
+env \
   CARGOKIT_ROOT_PROJECT_DIR="$BASE_PATH/src/$library" \
   CARGOKIT_DARWIN_ARCHS="x86_64" \
   CARGOKIT_CONFIGURATION="release" \
