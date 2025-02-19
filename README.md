@@ -19,28 +19,24 @@ With BDK Build Tool, you can build and verify reproduciblity of your own binarie
 BDK Build Tool reverse-engineers [Cargokit's](https://github.com/irondash/cargokit) magic to run on top docker for Android and Linux targets. All this while handling all the cross-compiling troubles for you.
 
 ## Get Started
-## What you'll Need
+### What you'll Need
 For MacOS and iOS targets, you'll need a Mac host to build. Android and Linux targets can be built on any machine so long as Docker is installed.
 
 | **Android and Linux Targets** | **MacOS and iOS Targets** |
 |------------------------------|---------------------------|
 | Docker                       | Dart and Flutter         |
-| Dart and Flutter             | Rustup (NOT installed via Homebrew) |
-| Git                          | Run `brew unlink rust` to unlink |
-|                              | Run `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` for Cargokit to detect rustup |
-|                              | Git                       |
+| Dart and Flutter             | Rustup (NOT installed via Homebrew)|
+| Git                          | Git                       |
 |                              | Xcode (for iOS)          |
 
+**💡 NB:** 
+If Rust is installed via Homebrew
+Run `brew unlink rust` to unlink.  
+Run ```curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh``` for Cargokit to detect rustup.
+
 ## How to Use
-
-<details>
-  <summary>Click to copy</summary>
-  <textarea readonly style="width:100%;height:50px;" onclick="this.select();document.execCommand('copy');">
-  ./bdk-rep-build build linux
-  </textarea>
-</details>
-
-> Clone the library you like to test into the SRC folder
+### Set up
+Clone the library you like to test into the SRC folder
 > chmod +x bdk-rep-build
 
 ### Building your Own Binaries
