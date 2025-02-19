@@ -98,8 +98,12 @@ Verifing binaries follows the same format as building except you can only verify
 
 ## Gotchas
 
-#### Sponsored by:
+#### Acknowlegments:
 
-<a href="https://www.bullbitcoin.com/">
-  <img src="img/bullbitcoin.png" alt="Sponsor Logo" width="150">
-</a>
+This project was a bounty sponsored by BullBitcoin
+
+<div style="text-align: center;">
+  <a href="https://www.bullbitcoin.com/">
+    <img src="img/bullbitcoin.png" alt="Sponsor Logo" width="50">
+  </a>
+</div>
