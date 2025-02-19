@@ -35,14 +35,34 @@ Run `brew unlink rust` to unlink.
 Run ```curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh``` for Cargokit to detect rustup.
 
 ## How to Use
-### Set up
-Clone the library you like to test into the SRC folder
-> chmod +x bdk-rep-build
 
+Clone this repo and check in to it via CLI. Give it executable permissions by running
+```
+    chmod +x bdk-rep-build.sh
+```
 ### Building your Own Binaries
 
-For linux
-  > ./bdk-rep-build build linux
+Building binaries for any target needs you to pass the library, target wish to build.
+You can specify the version of the release tag failure of which bdk-build-tool will resolve to build at the latest commit of repository .
+
+> ./bdk-rep-build build <library> <target> <version>
+
+Build binaries for a supported target
+
+```
+  ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu
+```
+Build binaries for supported for a specific release tag
+
+```
+  ./bdk-rep-build build bdk-flutter x86_64-unknown-linux-gnu 0.1.6
+```
+Build binaries for all targets for a platforms(ios, macos, android, linux)
+
+```
+  ./bdk-rep-build build lwk-dart ios 0.1.6
+```
+
 
 For androdid
   > ./bdk-rep-build build android
