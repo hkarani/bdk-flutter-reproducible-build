@@ -11,7 +11,7 @@
 
 ### Security Matters: Trust, but Verify
 
-Unaudited binaries are significantly harder to inspect. Meaning binaries you download online might do things you do expect or even run malware.
+Unaudited binaries are significantly harder to inspect. Meaning binaries you download online might do things you don't expect or even run malware.
 
 With BDK Build Tool, you can build and verify reproduciblity of your own binaries, to ensure that binaries you ship do exactly what you expect. 
 
@@ -43,8 +43,8 @@ Clone this repo and check in to it via CLI. Give it executable permissions by ru
 ```
 ### Building your Own Binaries
 
-Building binaries for any target needs you to pass the library, target wish to build.
-You can specify the version of the release tag, without which bdk-build-tool will resolve to build at the latest commit of repository.
+Building binaries for any target needs you to pass the library and target you wish to build.
+You can specify the version of the release tag, without which bdk-build-tool resolves to building at the latest commit of the repository.
 
 > ./bdk-rep-build build <library> <target> <version>
 
@@ -64,20 +64,42 @@ You can specify the version of the release tag, without which bdk-build-tool wil
  ./bdk-rep-build build lwk-dart ios 0.1.6
 ```
 
+After building your binaries, you will find them in the *release* folder under the specified version, inside a folder named after the target:
+  - release/
+    - latest/
+      - linux
+        - x86_64-unknown-linux-gnu
+          - *YOUR-BINARIES*
+    - 0.1.6/
+      - ios/
+        - aarch64-apple-ios
+          - *YOUR-BINARIES*
+
+
+
 ### Verifying your Binaries
+Verifing binaries follows the same format as building except you can only verify binaries you've build in the release folder.
+
+- Verifying binaries for a supported target
 
 ```
  ./bdk-rep-build verify boltz-dart x86_64-unknown-linux-gnu
 ```
-- Build binaries for supported for a specific release tag
+- Verify binaries for supported for a specific release tag
 
 ```
  ./bdk-rep-build verify bdk-flutter x86_64-unknown-linux-gnu 0.1.6
 ```
-- Build binaries for all targets for a platforms(ios, macos, android, linux)
+- Verify binaries for all targets for a platforms(ios, macos, android, linux)
 
 ```
  ./bdk-rep-build verify lwk-dart ios 0.1.6
 ```
 
-## Gothcas
+## Gotchas
+
+#### Sponsored by:
+
+<a href="https://www.bullbitcoin.com/">
+  <img src="img/bullbitcoin.png" alt="Sponsor Logo" width="150">
+</a>
