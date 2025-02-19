@@ -37,7 +37,7 @@ Run ```curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh``` to inst
 
 ## How to Use
 
-Clone this repo and check in to it via CLI. Give it executable permissions by running
+Clone this repo and check in to it via CLI. Give bdk-rep-build.sh executable permissions by running
 ```
  chmod +x bdk-rep-build.sh
 ```
@@ -78,7 +78,7 @@ After building your binaries, you will find them in the *release* folder under t
 
 
 ### Verifying your Binaries
-Verifing binaries follows the same format as building except you can only verify binaries you've build in the release folder.
+Verifing binaries follows the same format as building except you can only verify binaries you've built and exist in the release folder.
 
 - Verifying binaries for a supported target
 
@@ -97,13 +97,15 @@ Verifing binaries follows the same format as building except you can only verify
 ```
 
 ## Gotchas
-
+**💡 NB:**  
+- Regularly prune Docker images to free up space.  
+  To remove unused Docker images, run:  
+```sh
+ docker image prune -a -f
+```
+- Ensure a stable internet connection to avoid failed downloads or slow builds.
 #### Acknowlegments:
 
-This project was a bounty sponsored by BullBitcoin
-
-<div style="text-align: center;">
-  <a href="https://www.bullbitcoin.com/">
-    <img src="img/bullbitcoin.png" alt="Sponsor Logo" width="50">
-  </a>
-</div>
+<a href="https://www.bullbitcoin.com/">
+  <img src="img/bullbitcoin.png" alt="Sponsor Logo" width="50">
+</a>
