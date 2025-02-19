@@ -31,51 +31,53 @@ For MacOS and iOS targets, you'll need a Mac host to build. Android and Linux ta
 
 **💡 NB:** 
 If Rust is installed via Homebrew
+
 Run `brew unlink rust` to unlink.  
-Run ```curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh``` for Cargokit to detect rustup.
+Run ```curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh``` to install rustup BDK-buildtool can use.
 
 ## How to Use
 
 Clone this repo and check in to it via CLI. Give it executable permissions by running
 ```
-    chmod +x bdk-rep-build.sh
+ chmod +x bdk-rep-build.sh
 ```
 ### Building your Own Binaries
 
 Building binaries for any target needs you to pass the library, target wish to build.
-You can specify the version of the release tag failure of which bdk-build-tool will resolve to build at the latest commit of repository .
+You can specify the version of the release tag, without which bdk-build-tool will resolve to build at the latest commit of repository.
 
 > ./bdk-rep-build build <library> <target> <version>
 
-Build binaries for a supported target
+- Build binaries for a supported target
 
 ```
-  ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu
+ ./bdk-rep-build build boltz-dart x86_64-unknown-linux-gnu
 ```
-Build binaries for supported for a specific release tag
-
-```
-  ./bdk-rep-build build bdk-flutter x86_64-unknown-linux-gnu 0.1.6
-```
-Build binaries for all targets for a platforms(ios, macos, android, linux)
+- Build binaries for supported for a specific release tag
 
 ```
-  ./bdk-rep-build build lwk-dart ios 0.1.6
+ ./bdk-rep-build build bdk-flutter x86_64-unknown-linux-gnu 0.1.6
 ```
+- Build binaries for all targets for a platforms(ios, macos, android, linux)
 
-
-For androdid
-  > ./bdk-rep-build build android
-
-For macos
-  > ./bdk-rep-build build macos
-
-For macos
-  > ./bdk-rep-build build ios
+```
+ ./bdk-rep-build build lwk-dart ios 0.1.6
+```
 
 ### Verifying your Binaries
 
-1. Download binary into release/$target folder
-2. Run ./bdk-rep-build verify <target>
+```
+ ./bdk-rep-build verify boltz-dart x86_64-unknown-linux-gnu
+```
+- Build binaries for supported for a specific release tag
 
- > ./bdk-rep-build verify macos
+```
+ ./bdk-rep-build verify bdk-flutter x86_64-unknown-linux-gnu 0.1.6
+```
+- Build binaries for all targets for a platforms(ios, macos, android, linux)
+
+```
+ ./bdk-rep-build verify lwk-dart ios 0.1.6
+```
+
+## Gothcas
