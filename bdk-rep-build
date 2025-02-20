@@ -221,6 +221,9 @@ bdkrepbuild__help_build(){
 
 
 bdkrepbuild__verify(){
+    VERSION=$4
+    target=$3
+    library=$2
     # check if the library to be built has been passed to the script
     if [ -z "$2" ]; then
         echo "❌ You did not specify a library to verify! ❌"
@@ -294,11 +297,40 @@ bdkrepbuild__verify(){
         ;;
     esac
 
+    # Set variables
+    REPO="hkarani/$library"
+    DESTINATION="release/published/$library/$VERSION/$target"
+    mkdir -p $DESTINATION  # Change this to your desired location
+
+    # Fetch the filename dynamically
+    FILE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/tags/$VERSION" | \
+    sed -n 's/.*"browser_download_url": "\(.*\/'"$target"'[^"]*\)".*/\1/p' | head -n 1)
+
+    # Check if a file was found
+    if [[ -z "$FILE_URL" ]]; then
+    echo "No matching file found for target: $target"
+    exit 1
+    fi
+
+    # Extract filename
+    FILENAME=$(basename "$FILE_URL")
+
+    # Download the file
+    curl -L -o "$DESTINATION/$FILENAME" "$FILE_URL" >/dev/null 2>&1
+
+    # echo "Downloaded: $FILENAME to $DESTINATION"
+
+    # echo $FILENAME
+
+    # echo $DESTINATION
+
+   downloaded_file="$(cd "$DESTINATION" && pwd)/$FILENAME"
+
     # target="$2"   
     # export $target
 
-    # . ./verifier.sh
-    echo "Verifying $3 for $2 library"
+    . ./verifier.sh $library $target $downloaded_file $VERSION
+    echo "Verifying $target for $library library, version $VERSION"
 
 }
 
