@@ -14,3 +14,19 @@ export CARGOKIT_MANIFEST_DIR="$BASE_PATH/src/$library/rust"
 export CARGOKIT_OUTPUT_DIR="$BASE_PATH/release/$library/$VERSION/macos/x86_64-apple-darwin"
 
 dart run build_tool build-pod
+
+cd $BASE_PATH/src/$library/rust
+package_name_line=$(grep -m 1 -E '^name = .*' Cargo.toml)
+
+if [ ! -z "$package_name_line" ]; then
+    package_name=$(echo "$package_name_line" | cut -d '=' -f2 | tr -d '[:space:]' | sed 's/^"//' | sed 's/"$//')
+else
+    echo "Error: Could not find 'name' in [package] section"
+    exit 1
+fi
+
+echo "You package name is "$package_name
+
+file=$(ls $BASE_PATH/release/$library/$VERSION/ios/aarch64-apple-ios/*.a | head -n 1)  # Get the first `.a` file
+mv "$file" "$BASE_PATH/release/$library/$VERSION/ios/aarch64-apple-ios/aarch64-apple-ios_$package_name.a"
+echo "Build completed"

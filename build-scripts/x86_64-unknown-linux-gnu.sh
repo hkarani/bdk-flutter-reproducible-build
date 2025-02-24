@@ -95,11 +95,11 @@ fi
 
 
 full_path="/$current_dir/$folder_name"
-docker cp -a $container_id:$a_file "$full_path/lib$package_name-$package_version.so" || { 
+docker cp -a $container_id:$a_file "$full_path/${target}_lib_$package_name.so" || { 
     echo "Error: Failed to copy file from container." >&2
     exit 1
-}
+} 
 
 docker kill $container_id > /dev/null 2>&1
 
-echo "Build completed! Library in lib/linux folder."
+echo "Build completed! Library in $folder_name folder."
