@@ -316,6 +316,18 @@ bdkrepbuild__verify(){
     DESTINATION="release/published/$library/$VERSION/$target"
     mkdir -p $DESTINATION  # Change this to your desired location
 
+    case "$library" in
+    "bdk-flutter") repo_name="LtbLightning/bdk-flutter" ;;
+    "boltz-dart") repo_name="SatoshiPortal/boltz-dart" ;;
+    "lwk-dart") repo_name="SatoshiPortal/lwk-dart" ;;
+    *) 
+        echo "Error: Unsupported library '$library'"
+        exit 1
+        ;;
+    esac
+
+    FILE_URL1=""
+
     # Fetch the filename dynamically
     FILE_URL="https://github.com/$REPO/releases/download/$VERSION/$binary_name"
 
