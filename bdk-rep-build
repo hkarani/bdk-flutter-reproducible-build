@@ -296,19 +296,31 @@ bdkrepbuild__verify(){
         exit 1
         ;;
     esac
+    
+    cd src/$library/rust
+    package_name_line=$(grep -m 1 -E '^name = .*' Cargo.toml)
 
+    if [ ! -z "$package_name_line" ]; then
+        package_name=$(echo "$package_name_line" | cut -d '=' -f2 | tr -d '[:space:]' | sed 's/^"//' | sed 's/"$//')
+    else
+        echo "Error: Could not find 'name' in [package] section"
+        exit 1
+    fi
+
+    echo $package_name
+    cd ../../../
     case "$target" in
-    "x86_64-unknown-linux-gnu") binary_name="x86_64-unknown-linux-gnu.so" ;;
-    "aarch64-unknown-linux-gnu") binary_name="aarch64-unknown-linux-gnu.so" ;;
-    "x86_64-apple-darwin") binary_name="x86_64-apple-darwin.a" ;;
-    "aarch64-apple-darwin") binary_name="aarch64-apple-darwin.a" ;;
-    "aarch64-apple-ios") binary_name="aarch64-apple-ios.a" ;;
-    "aarch64-apple-ios-sim") binary_name="aarch64-apple-ios-sim.a" ;;
-    "x86_64-apple-ios") binary_name="x86_64-apple-ios.a" ;;
-    "aarch64-linux-android") binary_name="aarch64-linux-android.so" ;;
-    "i686-linux-android") binary_name="i686-linux-android.so" ;;
-    "x86_64-linux-android") binary_name="x86_64-linux-android.so" ;;
-    "armv7-linux-androideabi") binary_name="armv7-linux-androideabi.so" ;;
+    "x86_64-unknown-linux-gnu") binary_name="x86_64-unknown-linux-gnu_lib$package_name.so" ;;
+    "aarch64-unknown-linux-gnu") binary_name="aarch64-unknown-linux-gnu_lib$package_name.so" ;;
+    "x86_64-apple-darwin") binary_name="x86_64-apple-darwin_lib$package_name.a" ;;
+    "aarch64-apple-darwin") binary_name="aarch64-apple-darwin_lib$package_name.a" ;;
+    "aarch64-apple-ios") binary_name="aarch64-apple-ios_lib$package_name.a" ;;
+    "aarch64-apple-ios-sim") binary_name="aarch64-apple-ios-sim_lib$package_name.a" ;;
+    "x86_64-apple-ios") binary_name="x86_64-apple-ios_lib$package_name.a" ;;
+    "aarch64-linux-android") binary_name="aarch64-linux-android_lib$package_name.so" ;;
+    "i686-linux-android") binary_name="i686-linux-android_lib$package_name.so" ;;
+    "x86_64-linux-android") binary_name="x86_64-linux-android_lib$package_name.so" ;;
+    "armv7-linux-androideabi") binary_name="armv7-linux-androideabi_lib$package_name.so" ;;
     *) echo "Error: Unsupported target '$target'"; exit 1 ;;
     esac
     # Set variables
@@ -343,12 +355,6 @@ bdkrepbuild__verify(){
     FILENAME=$(basename "$FILE_URL")
     # Download the file
     curl -L -o "$DESTINATION/$FILENAME" "$FILE_URL" >/dev/null 2>&1
-
-    # echo "Downloaded: $FILENAME to $DESTINATION"
-
-    # echo $FILENAME
-
-    # echo $DESTINATION
 
    downloaded_file="$(cd "$DESTINATION" && pwd)/$FILENAME"
 
