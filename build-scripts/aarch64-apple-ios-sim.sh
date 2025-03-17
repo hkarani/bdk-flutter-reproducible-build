@@ -29,7 +29,7 @@ fi
 echo "You package name is "$package_name
 
 file=$(ls $BASE_PATH/release/$library/$VERSION/ios/aarch64-apple-ios/*.a | head -n 1)  # Get the first `.a` file
-mv "$file" "$BASE_PATH/release/$library/$VERSION/ios/aarch64-apple-ios/aarch64-apple-ios_$package_name.a"
+mv "$file" "$BASE_PATH/release/$library/$VERSION/ios/aarch64-apple-ios-sim/aarch64-apple-ios-sim_lib$package_name.a"
 echo "Build completed"
 
 echo "Build completed"
