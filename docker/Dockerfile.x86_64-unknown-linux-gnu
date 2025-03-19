@@ -25,43 +25,26 @@ RUN apt-get update && apt-get install -y \
 RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
 
 ENV PATH="/root/.cargo/bin:$PATH"
-
-WORKDIR /opt
-RUN git clone https://github.com/flutter/flutter.git -b master --depth 1
-ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:$PATH"
-# RUN cd /opt/flutter && git remote update --prune
-# RUN cd /opt/flutter && git fetch --all
-# RUN cd /opt/flutter && git checkout stable
-RUN flutter doctor
-
 # Copy the folder from root
 COPY src/* /app/
 
 # Change directory
-WORKDIR /app/cargokit/build_tool/bin
-
-RUN pwd
-
-RUN ls
+WORKDIR /app/rust/
 
 RUN mkdir -p ~/lib/linux
 
 RUN mkdir -p  ~/release/linux
 
+RUN rustup target add x86_64-unknown-linux-gnu
+RUN cargo build --release --target x86_64-unknown-linux-gnu
 
-RUN CARGOKIT_ROOT_PROJECT_DIR="/app/*/" \
-CARGOKIT_TARGET_PLATFORM="linux-x64" \
-CARGOKIT_CONFIGURATION="release" \
-CARGOKIT_TARGET_TEMP_DIR="/root/lib/linux" \
-CARGOKIT_MANIFEST_DIR="/app/rust" \
-CARGOKIT_OUTPUT_DIR="/root/release/linux" \
-dart run build_tool build-cmake
-
+WORKDIR /
+RUN ls
 RUN mkdir -p ~/release/output_binaries
-ENV SOURCE_DIR="/root/release/linux"
+ENV SOURCE_DIR="/app/rust/target/x86_64-unknown-linux-gnu/release/"
 ENV DEST_DIR="/root/release/output_binaries"
 
-RUN find "$SOURCE_DIR" -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
+RUN find "$SOURCE_DIR" -maxdepth 1 -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
 
 # Run a tiny program to make the build runnable
 CMD ["sleep", "infinity"]
