@@ -10,13 +10,7 @@ if [ ! -x "$(command -v docker)" ]; then
     exit 0
 fi
 
-# Function to extract the package version from Cargo.toml
-  # Use grep to find the line containing 'version' in Cargo.toml
 cd src/*/rust
-
-
-echo "Checked into rust folder"
-
 version_line=$(grep -E '^version = .*' Cargo.toml)
 
 # Extract the version string after the  '='
@@ -63,12 +57,6 @@ else
   echo "An error occurred while reading the version."
   exit 1  
 fi
-
-
-
-
-
-# Define target architectures
 
 echo "Starting  $target build..."
 DOCKER_BUILDKIT=0 docker build -t build-$target -f docker/Dockerfile.$target .

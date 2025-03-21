@@ -10,13 +10,8 @@ if [ ! -x "$(command -v docker)" ]; then
     exit 0
 fi
 
-# Function to extract the package version from Cargo.toml
-  # Use grep to find the line containing 'version' in Cargo.toml
 library=$1
 cd src/*/rust
-
-
-echo "Checked into rust folder"
 
 version_line=$(grep -E '^version = .*' Cargo.toml)
 
