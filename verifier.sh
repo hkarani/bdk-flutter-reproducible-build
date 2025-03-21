@@ -1,4 +1,4 @@
-# #!/bin/bash
+# #!/bin/sh
 library="$1"
 target="$2"
 downloaded_file="$3"
