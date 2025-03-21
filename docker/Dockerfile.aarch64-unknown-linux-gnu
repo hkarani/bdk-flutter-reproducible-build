@@ -27,46 +27,30 @@ RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
 
 ENV PATH="/root/.cargo/bin:$PATH"
 
-WORKDIR /opt
-RUN git clone https://github.com/flutter/flutter.git -b master --depth 1
-ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:$PATH"
-RUN flutter doctor
-
 # Copy the folder from root
 COPY src/* /app/
 
 # Change directory
-WORKDIR /app/cargokit/build_tool/bin
-
-RUN pwd
-
-RUN ls
+WORKDIR /app/rust
 
 RUN mkdir -p ~/lib/linux
 
 RUN mkdir -p  ~/release/linux
 
-RUN apt-get autoremove -y
-
 RUN apt install -y gcc-aarch64-linux-gnu	
 
 ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/aarch64-linux-gnu-gcc
 
+RUN rustup target add aarch64-unknown-linux-gnu
+RUN cargo build --release --target aarch64-unknown-linux-gnu
 
-RUN CARGOKIT_ROOT_PROJECT_DIR="/app/*/" \
-CARGOKIT_TARGET_PLATFORM="linux-arm64" \
-CARGOKIT_CONFIGURATION="release" \
-CARGOKIT_TARGET_TEMP_DIR="/root/lib/linux" \
-CARGOKIT_MANIFEST_DIR="/app/rust" \
-CARGOKIT_OUTPUT_DIR="/root/release/linux" \
-dart run build_tool build-cmake
-
+WORKDIR /
+RUN ls
 RUN mkdir -p ~/release/output_binaries
-ENV SOURCE_DIR="/root/release/linux"
+ENV SOURCE_DIR="/app/rust/target/aarch64-unknown-linux-gnu/release/"
 ENV DEST_DIR="/root/release/output_binaries"
 
-RUN find "$SOURCE_DIR" -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
-
+RUN find "$SOURCE_DIR" -maxdepth 1 -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
 
 # Run a tiny program to make the build runnable
 CMD ["sleep", "infinity"]
