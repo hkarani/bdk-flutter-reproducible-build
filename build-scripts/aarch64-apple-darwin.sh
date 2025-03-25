@@ -3,18 +3,10 @@
 BASE_PATH="$(pwd)"
 library=$1
 VERSION=${2:-"latest"}
-cd src/*/cargokit/build_tool/bin
 
-export CARGOKIT_ROOT_PROJECT_DIR="$BASE_PATH/src/$library"
-export CARGOKIT_DARWIN_ARCHS="arm64"
-export CARGOKIT_CONFIGURATION="release"
-export CARGOKIT_TARGET_TEMP_DIR="$BASE_PATH/lib/$library/$VERSION/macos/aarch64-apple-darwin"
-export CARGOKIT_DARWIN_PLATFORM_NAME="macosx"
-export CARGOKIT_MANIFEST_DIR="$BASE_PATH/src/$library/rust"
-export CARGOKIT_OUTPUT_DIR="$BASE_PATH/release/$library/$VERSION/macos/aarch64-apple-darwin"
+cd src/*/rust || { echo "Failed to change directory"; exit 1; }
+export IPHONEOS_DEPLOYMENT_TARGET=10.0
 
-dart run build_tool build-pod
-cd $BASE_PATH/src/$library/rust
 package_name_line=$(grep -m 1 -E '^name = .*' Cargo.toml)
 
 if [ ! -z "$package_name_line" ]; then
@@ -24,8 +16,11 @@ else
     exit 1
 fi
 
-echo "You package name is "$package_name
+rustup target add aarch64-apple-darwin
+cargo build --release --target aarch64-apple-darwin
 
-file=$(ls $BASE_PATH/release/$library/$VERSION/ios/aarch64-apple-ios/*.a | head -n 1)  # Get the first `.a` file
+
+file=$(ls $BASE_PATH/src/*/rust/target/aarch64-apple-darwin/release/*.a | head -n 1)  # Get the first `.a` file
+mkdir -p "$BASE_PATH/release/$library/$VERSION/ios/aarch64-apple-darwin"
 mv "$file" "$BASE_PATH/release/$library/$VERSION/ios/aarch64-apple-darwin/aarch64-apple-darwin_lib$package_name.a"
 echo "Build completed"
