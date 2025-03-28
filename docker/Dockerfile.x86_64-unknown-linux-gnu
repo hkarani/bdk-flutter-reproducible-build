@@ -25,6 +25,13 @@ RUN apt-get update && apt-get install -y \
 RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
 
 ENV PATH="/root/.cargo/bin:$PATH"
+
+ENV RUST_VERSION="1.80.0"
+
+RUN rustup install "$RUST_VERSION"
+
+RUN rustup default "$RUST_VERSION"
+
 # Copy the folder from root
 COPY src/* /app/
 

@@ -1,4 +1,17 @@
 #!/bin/bash
+if ! command -v rustup &> /dev/null; then
+    echo "Installing rustup..."
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
+
+RUST_VERSION="1.80.0"
+
+echo "Installing Rust $RUST_VERSION..."
+rustup install "$RUST_VERSION"
+
+echo "Setting Rust $RUST_VERSION as the default..."
+rustup default "$RUST_VERSION"
 
 BASE_PATH="$(pwd)"
 library=$1

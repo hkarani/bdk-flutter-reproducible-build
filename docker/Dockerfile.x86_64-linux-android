@@ -27,6 +27,12 @@ RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
 
 ENV PATH="/root/.cargo/bin:$PATH"
 
+ENV RUST_VERSION="1.80.0"
+
+RUN rustup install "$RUST_VERSION"
+
+RUN rustup default "$RUST_VERSION"
+
 RUN cargo install cargo-ndk
 
 # Install Android SDK
