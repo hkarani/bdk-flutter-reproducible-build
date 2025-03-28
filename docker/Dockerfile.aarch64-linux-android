@@ -27,10 +27,8 @@ RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
 
 ENV PATH="/root/.cargo/bin:$PATH"
 
-WORKDIR /opt
-RUN git clone https://github.com/flutter/flutter.git -b master --depth 1
-ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:$PATH"
-RUN flutter doctor
+# Install cargo-ndk
+RUN cargo install cargo-ndk
 
 # Install Android SDK
 WORKDIR /usr/lib
@@ -44,52 +42,40 @@ RUN curl -sSL https://dl.google.com/android/repository/commandlinetools-linux-94
 # Set up Android SDK environment variables
 ENV ANDROID_HOME="/usr/lib/android-sdk"
 ENV PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
-# Verify Java installation
-RUN java -version && javac -version
+
 # Accept Android SDK licenses
 RUN yes | sdkmanager --licenses
 
 # Install Android NDK
-RUN sdkmanager --install "ndk;21.3.6528147"
+RUN sdkmanager --install "ndk;25.1.8937393"
 
 # Set up NDK environment variables
-ENV ANDROID_NDK_HOME="$ANDROID_HOME/ndk/21.3.6528147"
+ENV ANDROID_NDK_HOME="$ANDROID_HOME/ndk/25.1.8937393"
 ENV PATH="$ANDROID_NDK_HOME:$PATH"
+
+ENV CARGO_TARGET_AARCH64-LINUX-ANDROID_LINKER=clang
+ENV CARGO_TARGET_AARCH64-LINUX-ANDROID_RUSTFLAGS="-C link-arg=-fuse-ld=lld"
 # Copy the folder from root
 COPY src/* /app/
 
 # Change directory
-WORKDIR /app/cargokit/build_tool/bin
+WORKDIR /app/rust
 
-RUN pwd
+RUN rustup target install aarch64-linux-android
 
+RUN mkdir -p /root/release/linux && \
+    cargo ndk -t aarch64-linux-android build --release 
+
+WORKDIR /
 RUN ls
 
-RUN mkdir -p ~/lib/android
-
-RUN mkdir -p  ~/release/android
-
-RUN export CC=aarch64-linux-gnu-gcc
-RUN export AR=aarch64-linux-gnu-ar
-RUN export RUSTFLAGS="-C linker=aarch64-linux-gnu-gcc"
-
-RUN CARGOKIT_ROOT_PROJECT_DIR="/app/*/" \
-CARGOKIT_TARGET_PLATFORMS="android-arm64" \
-CARGOKIT_CONFIGURATION="release" \
-CARGOKIT_TARGET_TEMP_DIR="/root/lib/android" \
-CARGOKIT_MANIFEST_DIR="/app/rust" \
-CARGOKIT_OUTPUT_DIR="/root/release/android/aarch64-linux-android" \
-CARGOKIT_MIN_SDK_VERSION="21" \
-CARGOKIT_NDK_VERSION="21.3.6528147" \
-CARGOKIT_SDK_DIR="/usr/lib/android-sdk" \
-CARGOKIT_JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64" \
-dart run build_tool build-gradle
+RUN cp -r /app/rust/target/aarch64-linux-android/release/* /root/release/linux/
 
 RUN mkdir -p ~/release/output_binaries
-ENV SOURCE_DIR="/root/release/android"
+ENV SOURCE_DIR="/app/rust/target/aarch64-linux-android/release"
 ENV DEST_DIR="/root/release/output_binaries"
 
-RUN find "$SOURCE_DIR" -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
+RUN find "$SOURCE_DIR" -maxdepth 1 -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
 
 # Run a tiny program to make the build runnable
 CMD ["sleep", "infinity"]
