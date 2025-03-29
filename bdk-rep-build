@@ -87,10 +87,16 @@ bdkrepbuild__build() {
             echo "$VALID_TAGS"
             exit 1
         fi
-            git checkout $VERSION
+            git switch --detach $VERSION
             echo "You're building repo for version $VERSION"
         else
-            echo "No version specified. You're buildng at the lastest commit of $lib_folder."
+            echo "No version specified. You're buildng at the lastest release tag of $lib_folder."
+            git fetch --tags
+            latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+            if [ -z "$latest_tag" ]; then
+                echo "No tags found in the repository."
+                exit 1
+            fi
         fi
         ;;
        
@@ -138,7 +144,8 @@ bdkrepbuild__build() {
             echo "Starting $trgt build"
             . ./configs.sh
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
-            cd ../../../../../
+            git rev-parse HEAD
+            cd ../../../
         done
 
     elif [ "$target" == "android" ]; then
@@ -164,11 +171,17 @@ bdkrepbuild__build() {
         macos_targets=("x86_64-apple-darwin" "aarch64-apple-darwin")
         for trgt in "${macos_targets[@]}"; do
             echo "Starting $trgt build"
+            cd src/$library
+            git log -1
+            cd ../../
             . ./configs.sh
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
-            cd ../../../../../
+            git log -1
+            cd ../../../
         done
-
+        cd src/$library
+        git checkout HEAD
+        git log -1
     else
         # For other targets, run the normal build process
         case "$3" in
