@@ -13,10 +13,6 @@ fi
 # Function to extract the package version from Cargo.toml
   # Use grep to find the line containing 'version' in Cargo.toml
 cd src/*/rust
-
-
-echo "Checked into rust folder"
-
 version_line=$(grep -E '^version = .*' Cargo.toml)
 
 # Extract the version string after the  '='
@@ -48,32 +44,17 @@ else
     lib_name=""
 fi
 
-# Print the final package name
-echo "Package name: $package_name"
-
-
-
 cd ../../../
-
 
 # Print the version or handle errors
 if [ ! -z "$package_version" ]; then
-  echo "Package version: $package_version"
+  :
 else
   echo "An error occurred while reading the version."
   exit 1  
 fi
 
-
-
-
-
-# Define target architectures
-
-echo "Starting  $target build..."
-docker build -t build-$target -f docker/Dockerfile.$target .
-echo "Build completed!"
-echo "Running build-$target docker"
+docker build --load -t build-$target -f docker/Dockerfile.$target .
 container_id=$(docker run -d "build-$target") || { echo "Failed to run container"; exit 1; }
 current_dir=$(pwd)
 library=$1
@@ -84,8 +65,6 @@ if [ -d "$folder_name" ]; then
     rm -rf "$folder_name"
 fi
 mkdir -p "$folder_name"
-
-architecture="x86_64-unknown-linux-gnu"
 
 if [ ! -z "$lib_name" ]; then
   a_file="/root/release/output_binaries/lib$lib_name.so"
@@ -100,4 +79,4 @@ docker cp -a $container_id:$a_file "$full_path/${target}_lib$package_name.so" ||
     exit 1
 }
 docker kill $container_id > /dev/null 2>&1
-echo "Build completed! Library in $folder_name folder."
+echo "✅ x86_64-linux-android build completed! Binary in $folder_name folder."

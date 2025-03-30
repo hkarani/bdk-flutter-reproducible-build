@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set +e  # Exit on failure
+set +e
 
 # Check if docker is installed
 
@@ -11,9 +11,8 @@ if [ ! -x "$(command -v docker)" ]; then
 fi
 
 cd src/*/rust
-version_line=$(grep -E '^version = .*' Cargo.toml)
-
 # Extract the version string after the  '='
+version_line=$(grep -E '^version = .*' Cargo.toml)
 if [ ! -z "$version_line" ]; then
     version=$(echo "$version_line" | cut -d '=' -f2 | tr -d '[:space:]')
     package_version=$(echo "$version" | sed 's/^"//' | sed 's/"$//')
@@ -42,26 +41,16 @@ else
     lib_name=""
 fi
 
-# Print the final package name
-echo "Package name: $package_name"
-
-
-
 cd ../../../
-
-
 # Print the version or handle errors
 if [ ! -z "$package_version" ]; then
-  echo "Package version: $package_version"
+  :
 else
   echo "An error occurred while reading the version."
   exit 1  
 fi
 
-echo "Starting  $target build..."
-docker build -t build-$target -f docker/Dockerfile.$target .
-echo "Build completed!"
-echo "Running build-$target docker"
+docker build --load -t build-$target -f docker/Dockerfile.$target .
 container_id=$(docker run -d "build-$target") || { echo "Failed to run container"; exit 1; }
 current_dir=$(pwd)
 library=$1
@@ -72,8 +61,6 @@ if [ -d "$folder_name" ]; then
     rm -rf "$folder_name"
 fi
 mkdir -p "$folder_name"
-
-architecture="x86_64-unknown-linux-gnu"
 
 if [ ! -z "$lib_name" ]; then
   a_file="/root/release/output_binaries/lib$lib_name.so"
@@ -90,4 +77,4 @@ docker cp -a $container_id:$a_file "$full_path/${target}_lib$package_name.so" ||
 
 docker kill $container_id > /dev/null 2>&1
 
-echo "Build completed! Library in $folder_name folder."
+echo "✅ x86_64-unknown-linux-gnu build completed! Binary in $folder_name folder."

@@ -33,8 +33,8 @@ fi
 rustup target add x86_64-apple-darwin
 cargo build --release --target x86_64-apple-darwin
 
-
 file=$(ls $BASE_PATH/src/*/rust/target/x86_64-apple-darwin/release/*.a | head -n 1)  # Get the first `.a` file
 mkdir -p "$BASE_PATH/release/$library/$VERSION/ios/x86_64-apple-darwin"
 mv "$file" "$BASE_PATH/release/$library/$VERSION/ios/x86_64-apple-darwin/x86_64-apple-darwin_lib$package_name.a"
-echo "Build completed"
+cd ../../../
+echo "✅ x86_64-apple-darwin build completed. Binary in release/$library/$VERSION/ios/x86_64-apple-ios/ folder. "

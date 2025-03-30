@@ -33,8 +33,8 @@ cargo install cargo-lipo
 rustup target add x86_64-apple-ios
 cargo build --release --target x86_64-apple-ios
 
-
 file=$(ls $BASE_PATH/src/*/rust/target/x86_64-apple-ios/release/*.a | head -n 1)  # Get the first `.a` file
 mkdir -p "$BASE_PATH/release/$library/$VERSION/ios/x86_64-apple-ios"
 mv "$file" "$BASE_PATH/release/$library/$VERSION/ios/x86_64-apple-ios/x86_64-apple-ios_lib$package_name.a"
-echo "Build completed"
+cd ../../../
+echo "✅ x86_64-apple-ios build completed. Binary in release/$library/$VERSION/ios/x86_64-apple-ios/ folder."

@@ -34,8 +34,8 @@ cargo install cargo-lipo
 rustup target add aarch64-apple-ios-sim
 cargo build --release --target aarch64-apple-ios-sim
 
-
 file=$(ls $BASE_PATH/src/*/rust/target/aarch64-apple-ios-sim/release/*.a | head -n 1)  # Get the first `.a` file
 mkdir -p "$BASE_PATH/release/$library/$VERSION/ios/aarch64-apple-ios-sim"
 mv "$file" "$BASE_PATH/release/$library/$VERSION/ios/aarch64-apple-ios-sim/aarch64-apple-ios-sim_lib$package_name.a"
-echo "Build completed"
+cd ../../../
+echo "✅ aarch64-apple-ios-sim build completed. Binary in release/$library/$VERSION/ios/x86_64-apple-ios/ folder."
