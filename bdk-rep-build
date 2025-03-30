@@ -41,32 +41,24 @@ bdkrepbuild__build() {
         }
 
         repo_url=$(get_repo_url $2) 
-        echo "Your repo url is $repo_url"
 
         if [[ -d "$lib_folder" ]]; then
-            echo "Folder exists!"
-
             if [[ -d "$lib_folder/.git" ]]; then
-                echo "Checking for updates in $lib_folder..."
                 cd "$lib_folder" || exit 1
                 git fetch origin
                 # Check if local branch is behind
                 if [[ $(git status -uno | grep "Your branch is behind") ]]; then
-                    echo "Updating $lib_folder..."
                     git pull origin "$(git rev-parse --abbrev-ref HEAD)"
                 else
-                    echo "$lib_folder is already up to date."
+                    :
                 fi
             else
-                echo "Not a Git repository. Removing and re-cloning..."
                 rm -rf "$lib_folder"
                 cd $parent_folder
                 git clone "$repo_url"
                 cd $lib_folder
             fi
         else
-            echo "Folder does not exist."
-            echo "Cloning git repo..."
             cd $parent_folder
             for subfolder in "$parent_folder"/*/; do
                 if [[ -d "$subfolder" ]]; then
@@ -82,21 +74,21 @@ bdkrepbuild__build() {
 
         if [[ -n "$VERSION" ]]; then
         if ! echo "$VALID_TAGS" | grep -q "^$VERSION$"; then
-            echo "❌ Invalid release tag '$VERSION' provided!"
-            echo "✅ The following are valid release tags:"
+            echo "❌ Invalid release tag '$VERSION' passed! Valid release tags:"
             echo "$VALID_TAGS"
             exit 1
         fi
             git switch --detach $VERSION
             echo "You're building repo for version $VERSION"
         else
-            echo "No version specified. You're buildng at the lastest release tag of $lib_folder."
+            echo "No version specified. Buildng at the lastest release tag of $library."
             git fetch --tags
             latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
             if [ -z "$latest_tag" ]; then
-                echo "No tags found in the repository."
+                echo "❌ No tags found in the repository."
                 exit 1
             fi
+            VERSION=$latest_tag
         fi
         ;;
        
@@ -127,42 +119,30 @@ bdkrepbuild__build() {
         exit 1  # Exit script with error code
     fi
 
-    targets=(
-        "x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu"
-        "armv7-linux-androideabi" "aarch64-linux-android" "i686-linux-android"
-        "x86_64-linux-android" "x86_64-pc-windows-msvc" "x86_64-apple-darwin"
-        "aarch64-apple-darwin" "aarch64-apple-ios" "aarch64-apple-ios-sim"
-        "x86_64-apple-ios"
-    )
-    
-    cd ../../  
-    pwd
+    cd ../../
 
     if [ "$target" == "ios" ]; then
         ios_targets=("aarch64-apple-ios" "x86_64-apple-ios" "aarch64-apple-ios-sim")
         for trgt in "${ios_targets[@]}"; do
-            echo "Starting $trgt build"
+            echo "🟡 Starting $trgt build"
             . ./configs.sh
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
-            git rev-parse HEAD
-            cd ../../../
         done
 
     elif [ "$target" == "android" ]; then
         android_targets=("aarch64-linux-android" "armv7-linux-androideabi" "i686-linux-android" "x86_64-linux-android")
         for trgt in "${android_targets[@]}"; do
-            echo "Starting $trgt build"
+            echo "🟡 Starting $trgt build"
             target=$trgt
             . ./configs.sh
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
         done
 
     elif [ "$target" == "linux" ]; then
-        echo "You're building for linux"
         linux_targets=("x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu")
         for trgt in "${linux_targets[@]}"; do
             target=$trgt
-            echo "Starting $trgt build"
+            echo "🟡 Starting $trgt build"
             . ./configs.sh
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
         done
@@ -170,18 +150,26 @@ bdkrepbuild__build() {
     elif [ "$target" == "macos" ]; then
         macos_targets=("x86_64-apple-darwin" "aarch64-apple-darwin")
         for trgt in "${macos_targets[@]}"; do
-            echo "Starting $trgt build"
-            cd src/$library
-            git log -1
-            cd ../../
+            echo "🟡 Starting $trgt build"
             . ./configs.sh
             . "./build-scripts/$trgt.sh" "$library" "$VERSION"
-            git log -1
-            cd ../../../
         done
-        cd src/$library
-        git checkout HEAD
-        git log -1
+    elif [ "$target" == "all" ]; then
+        echo "Building for all targets"
+        all_targets=(
+            "x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu"
+            "armv7-linux-androideabi" "aarch64-linux-android" "i686-linux-android"
+            "x86_64-linux-android" "x86_64-apple-darwin"
+            "aarch64-apple-darwin" "aarch64-apple-ios" "aarch64-apple-ios-sim"
+            "x86_64-apple-ios"
+        )
+        
+        for trgt in "${all_targets[@]}"; do
+            target=$trgt
+            echo "🟡 Starting $trgt build"
+            . ./configs.sh
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+        done
     else
         # For other targets, run the normal build process
         case "$3" in
@@ -213,6 +201,7 @@ bdkrepbuild__build() {
             ;;
         esac
         . ./configs.sh
+        echo "🟡 Starting $target build"
         . "./build-scripts/$target.sh" "$library" "$VERSION"
     fi
 }
