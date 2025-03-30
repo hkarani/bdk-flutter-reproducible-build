@@ -6,6 +6,28 @@ if ! command -v rustup &> /dev/null; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
+if [ ! $(command -v rustc) ]; then
+  echo "Rust compiler (rustc) not found. Please install Rust from https://www.rust-lang.org/"
+  exit 1
+fi
+
+# Check for Xcode Command Line Tools
+if [ ! $(command -v xcrun) ]; then
+  echo "Xcode Command Line Tools not installed. Please install via Xcode Preferences or run 'xcode-select --install'."
+  exit 1
+fi
+
+# Check for Xcode
+if [ ! $(command -v xcodebuild) ]; then
+  echo "Xcode not found)."
+fi
+
+if [ ! -x "$(command -v git)" ]; then
+    echo "Git is not installed."
+    echo "Installation instructions might be here: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"
+    exit 0
+fi
+
 RUST_VERSION="1.80.0"
 
 echo "Installing Rust $RUST_VERSION..."

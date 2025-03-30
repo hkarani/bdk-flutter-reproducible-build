@@ -10,6 +10,12 @@ if [ ! -x "$(command -v docker)" ]; then
     exit 0
 fi
 
+if [ ! -x "$(command -v git)" ]; then
+    echo "Git is not installed."
+    echo "Installation instructions might be here: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"
+    exit 0
+fi
+
 library=$1
 cd src/*/rust
 
