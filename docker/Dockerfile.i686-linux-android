@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS builder
 
 # Install dependencies for Rust development
 RUN apt-get update && apt-get install -y \
@@ -77,6 +77,10 @@ ENV SOURCE_DIR="/app/rust/target/i686-linux-android/release"
 ENV DEST_DIR="/root/release/output_binaries"
 
 RUN find "$SOURCE_DIR" -maxdepth 1 -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
+
+FROM ubuntu:22.04 AS final
+RUN mkdir -p ~/release/output_binaries
+COPY --from=builder /root/release/output_binaries/*.so /root/release/output_binaries
 
 # Run a tiny program to make the build runnable
 CMD ["sleep", "infinity"]

@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS builder
 
 # Install dependencies for Rust development
 RUN apt-get update && apt-get install -y \
@@ -38,13 +38,15 @@ RUN mkdir -p  ~/release/linux
 RUN rustup target add x86_64-unknown-linux-gnu
 RUN cargo build --release --target x86_64-unknown-linux-gnu
 
-WORKDIR /
-RUN ls
 RUN mkdir -p ~/release/output_binaries
 ENV SOURCE_DIR="/app/rust/target/x86_64-unknown-linux-gnu/release/"
 ENV DEST_DIR="/root/release/output_binaries"
 
 RUN find "$SOURCE_DIR" -maxdepth 1 -type f -name "*.so" -exec cp {} "$DEST_DIR" \; -quit
+
+FROM ubuntu:22.04 AS final
+RUN mkdir -p ~/release/output_binaries
+COPY --from=builder /root/release/output_binaries/*.so /root/release/output_binaries
 
 # Run a tiny program to make the build runnable
 CMD ["sleep", "infinity"]
