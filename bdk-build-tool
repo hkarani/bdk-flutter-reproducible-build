@@ -1,0 +1,447 @@
+#!/bin/sh
+
+set -e
+
+bdkbuildtool__build() {
+    VERSION=$4
+    target=$3
+    library=$2 
+    # check if the library to be built has been passed to the script
+    if [ -z "$2" ]; then
+        echo "❌ You did not specify a library to build! ❌"
+        usage=" 
+        USAGE
+            $ ./bdk-rep-build build <library> <target>
+
+        EXAMPLE 
+            $ ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu"
+        echo "$usage"
+        exit 1 
+    fi
+
+    case "$2" in
+    "bdk-flutter" | "boltz-dart" | "lwk-dart")
+        parent_folder="$(pwd)/src"
+        lib_folder="$(pwd)/src/$2"
+
+        supported_libraries_keys=("bdk-flutter" "boltz-dart" "lwk-dart")
+        supported_libraries_urls=("https://github.com/LtbLightning/bdk-flutter.git" "https://github.com/SatoshiPortal/boltz-dart.git" "https://github.com/SatoshiPortal/lwk-dart.git")
+
+        # Function to get the repository URL
+        get_repo_url() {
+            local library_name="$1"
+            for i in "${!supported_libraries_keys[@]}"; do
+                if [[ "${supported_libraries_keys[i]}" == "$library_name" ]]; then
+                    echo "${supported_libraries_urls[i]}"
+                    return
+                fi
+            done
+            echo "Library not found"
+            exit 1
+        }
+
+        repo_url=$(get_repo_url $2) 
+
+        if [[ -d "$lib_folder" ]]; then
+            if [[ -d "$lib_folder/.git" ]]; then
+                cd "$lib_folder" || exit 1
+                git fetch origin
+                # Check if local branch is behind
+                if [[ $(git status -uno | grep "Your branch is behind") ]]; then
+                    git pull origin "$(git rev-parse --abbrev-ref HEAD)"
+                else
+                    :
+                fi
+            else
+                rm -rf "$lib_folder"
+                cd $parent_folder
+                git clone "$repo_url"
+                cd $lib_folder
+            fi
+        else
+            cd $parent_folder
+            for subfolder in "$parent_folder"/*/; do
+                if [[ -d "$subfolder" ]]; then
+                    rm -rf "$subfolder" 
+                fi
+            done
+            git clone "$repo_url"
+            cd $lib_folder
+        fi
+        ##Check out the passed tag version
+        git fetch --tags > /dev/null 2>&1
+        VALID_TAGS=$(git tag)
+
+        if [[ -n "$VERSION" ]]; then
+        if ! echo "$VALID_TAGS" | grep -q "^$VERSION$"; then
+            echo "❌ Invalid release tag '$VERSION' passed! Valid release tags:"
+            echo "$VALID_TAGS"
+            exit 1
+        fi
+            git switch --detach $VERSION
+            echo "You're building repo for version $VERSION"
+        else
+            echo "No version specified. Buildng at the lastest release tag of $library."
+            git fetch --tags
+            latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+            if [ -z "$latest_tag" ]; then
+                echo "❌ No tags found in the repository."
+                exit 1
+            fi
+            VERSION=$latest_tag
+        fi
+        ;;
+       
+    *)
+        echo "❌ Error: $2 is not a supported library. ❌"
+        supported_libraries="
+            Supported libraries are:
+                - lwk-dart
+                - bdk-flutter
+                - lwk-dart
+        "
+        echo "$supported_libraries"
+        exit 1
+        ;;
+    esac
+
+
+    if [ -z "$3" ]; then
+        echo "❌ You did not specify a build target! ❌"
+        usage=" 
+        USAGE
+            $ ./bdk-rep-build build <library> <target>
+
+        EXAMPLE 
+            $ ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu
+        "
+        echo "$usage"
+        exit 1  # Exit script with error code
+    fi
+
+    cd ../../
+
+    if [ "$target" == "ios" ]; then
+        ios_targets=("aarch64-apple-ios" "x86_64-apple-ios" "aarch64-apple-ios-sim")
+        for trgt in "${ios_targets[@]}"; do
+            echo "🟡 Starting $trgt build"
+            . ./configs.sh
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+        done
+
+    elif [ "$target" == "android" ]; then
+        android_targets=("aarch64-linux-android" "armv7-linux-androideabi" "i686-linux-android" "x86_64-linux-android")
+        for trgt in "${android_targets[@]}"; do
+            echo "🟡 Starting $trgt build"
+            target=$trgt
+            . ./configs.sh
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+        done
+
+    elif [ "$target" == "linux" ]; then
+        linux_targets=("x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu")
+        for trgt in "${linux_targets[@]}"; do
+            target=$trgt
+            echo "🟡 Starting $trgt build"
+            . ./configs.sh
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+        done
+
+    elif [ "$target" == "macos" ]; then
+        macos_targets=("x86_64-apple-darwin" "aarch64-apple-darwin")
+        for trgt in "${macos_targets[@]}"; do
+            echo "🟡 Starting $trgt build"
+            . ./configs.sh
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+        done
+    elif [ "$target" == "all" ]; then
+        echo "Building for all targets"
+        all_targets=(
+            "x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu"
+            "armv7-linux-androideabi" "aarch64-linux-android" "i686-linux-android"
+            "x86_64-linux-android" "x86_64-apple-darwin"
+            "aarch64-apple-darwin" "aarch64-apple-ios" "aarch64-apple-ios-sim"
+            "x86_64-apple-ios"
+        )
+        
+        for trgt in "${all_targets[@]}"; do
+            target=$trgt
+            echo "🟡 Starting $trgt build"
+            . ./configs.sh
+            . "./build-scripts/$trgt.sh" "$library" "$VERSION"
+        done
+    else
+        # For other targets, run the normal build process
+        case "$3" in
+            "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu" | \
+            "armv7-linux-androideabi" | "aarch64-linux-android" | "i686-linux-android" | \
+            "x86_64-linux-android" | "x86_64-pc-windows-msvc" | "x86_64-apple-darwin" | \
+            "aarch64-apple-darwin" | "aarch64-apple-ios" | "aarch64-apple-ios-sim" | \
+            "x86_64-apple-ios")
+            ;;
+        *)
+            echo "❌ Error: $3 is not a supported build target. ❌"
+            supported_targets="
+                Supported targets are:
+                    -x86_64-unknown-linux-gnu 
+                    -aarch64-unknown-linux-gnu
+                    -armv7-linux-androideabi 
+                    -aarch64-linux-android 
+                    -i686-linux-android  
+                    -x86_64-linux-android 
+                    -x86_64-pc-windows-msvc 
+                    -x86_64-apple-darwin
+                    -aarch64-apple-darwin 
+                    -aarch64-apple-ios 
+                    -aarch64-apple-ios-sim 
+                    -x86_64-apple-ios
+            "
+            echo "$supported_targets"
+            exit 1
+            ;;
+        esac
+        . ./configs.sh
+        echo "🟡 Starting $target build"
+        . "./build-scripts/$target.sh" "$library" "$VERSION"
+    fi
+}
+
+bdkbuildtool__help_build(){
+
+    help="
+    Create a binaries for specific target
+    USAGE
+        $ ./bdk-rep-build build <library> <target>
+
+    EXAMPLE 
+        $ ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu
+    "
+
+    echo "$help"
+
+}
+
+
+bdkbuildtool__verify(){
+    VERSION=$4
+    target=$3
+    library=$2
+    # check if the library to be built has been passed to the script
+    if [ -z "$2" ]; then
+        echo "❌ You did not specify a library to verify! ❌"
+        usage=" 
+        USAGE
+            $ ./bdk-rep-build verify <library> <target>
+
+        EXAMPLE 
+            $ ./bdk-rep-build verify bolt-dart x86_64-unknown-linux-gnu
+        "
+        echo "$usage"
+        exit 1 
+    fi
+
+    case "$2" in
+    "bdk-flutter" | "boltz-dart" | "lwk-dart")
+        ;;
+    *)
+        echo "❌ Error: $2 is not a supported library. ❌"
+        supported_libraries="
+            Supported libraries are:
+                - lwk-dart
+                - bdk-flutter
+                - lwk-dart
+        "
+        echo "$supported_libraries"
+        exit 1
+        ;;
+    esac
+
+    if [ -z "$3" ]; then
+        echo "❌ You did not specify a target to verify! ❌"
+        usage=" 
+        USAGE
+            $ ./bdk-rep-build verify <library> <target>
+
+        EXAMPLE 
+            $ ./bdk-rep-build verify boltz-dart x86_64-unknown-linux-gnu
+        "
+        echo "$usage"
+        exit 1  # Exit script with error code
+    fi
+
+    case "$3" in
+        "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu" | \
+        "armv7-linux-androideabi" | "aarch64-linux-android" | "i686-linux-android" | \
+        "x86_64-linux-android" | "x86_64-pc-windows-msvc" | "x86_64-apple-darwin" | \
+        "aarch64-apple-darwin" | "aarch64-apple-ios" | "aarch64-apple-ios-sim" | \
+        "x86_64-apple-ios")
+        ;;
+    *)
+        echo "❌ Error: $3 is not a supported target you can verify. ❌"
+    supported_targets="
+        Supported targets are:
+                -x86_64-unknown-linux-gnu 
+                -aarch64-unknown-linux-gnu
+                -armv7-linux-androideabi 
+                -aarch64-linux-android 
+                -i686-linux-android  
+                -x86_64-linux-android 
+                -x86_64-pc-windows-msvc 
+                -x86_64-apple-darwin
+                -aarch64-apple-darwin 
+                -aarch64-apple-ios 
+                -aarch64-apple-ios-sim 
+                -x86_64-apple-ios
+
+       "
+        echo "$supported_targets"
+        exit 1
+        ;;
+    esac
+    
+    cd src/$library/rust
+    package_name_line=$(grep -m 1 -E '^name = .*' Cargo.toml)
+
+    if [ ! -z "$package_name_line" ]; then
+        package_name=$(echo "$package_name_line" | cut -d '=' -f2 | tr -d '[:space:]' | sed 's/^"//' | sed 's/"$//')
+    else
+        echo "Error: Could not find 'name' in [package] section"
+        exit 1
+    fi
+
+    echo $package_name
+    cd ../../../
+    case "$target" in
+    "x86_64-unknown-linux-gnu") binary_name="x86_64-unknown-linux-gnu_lib$package_name.so" ;;
+    "aarch64-unknown-linux-gnu") binary_name="aarch64-unknown-linux-gnu_lib$package_name.so" ;;
+    "x86_64-apple-darwin") binary_name="x86_64-apple-darwin_lib$package_name.a" ;;
+    "aarch64-apple-darwin") binary_name="aarch64-apple-darwin_lib$package_name.a" ;;
+    "aarch64-apple-ios") binary_name="aarch64-apple-ios_lib$package_name.a" ;;
+    "aarch64-apple-ios-sim") binary_name="aarch64-apple-ios-sim_lib$package_name.a" ;;
+    "x86_64-apple-ios") binary_name="x86_64-apple-ios_lib$package_name.a" ;;
+    "aarch64-linux-android") binary_name="aarch64-linux-android_lib$package_name.so" ;;
+    "i686-linux-android") binary_name="i686-linux-android_lib$package_name.so" ;;
+    "x86_64-linux-android") binary_name="x86_64-linux-android_lib$package_name.so" ;;
+    "armv7-linux-androideabi") binary_name="armv7-linux-androideabi_lib$package_name.so" ;;
+    *) echo "Error: Unsupported target '$target'"; exit 1 ;;
+    esac
+    # Set variables
+    REPO="hkarani/$library"
+    DESTINATION="release/published/$library/$VERSION/$target"
+    mkdir -p $DESTINATION  # Change this to your desired location
+
+    case "$library" in
+    "bdk-flutter") repo_name="LtbLightning/bdk-flutter" ;;
+    "boltz-dart") repo_name="SatoshiPortal/boltz-dart" ;;
+    "lwk-dart") repo_name="SatoshiPortal/lwk-dart" ;;
+    *) 
+        echo "Error: Unsupported library '$library'"
+        exit 1
+        ;;
+    esac
+
+    FILE_URL1=""
+
+    # Fetch the filename dynamically
+    FILE_URL="https://github.com/$REPO/releases/download/$VERSION/$binary_name"
+
+    # Check if a file was found
+    if [[ -z "$FILE_URL" ]]; then
+        echo "No matching file found for target: $target"
+        echo $FILE_URL
+        exit 1
+    fi
+
+   
+    # Extract filename
+    FILENAME=$(basename "$FILE_URL")
+    # Download the file
+    curl -L -o "$DESTINATION/$FILENAME" "$FILE_URL" >/dev/null 2>&1
+
+   downloaded_file="$(cd "$DESTINATION" && pwd)/$FILENAME"
+
+    # target="$2"   
+    # export $target
+
+    . ./verifier.sh $library $target $downloaded_file $VERSION
+}
+
+bdkbuildtool__help_verify() {
+    help="
+Verify a build for a specific target
+
+USAGE
+$ ./bdk-rep-build verify <library> <target>
+
+EXAMPLE 
+$ ./bdk-rep-build verify boltz-dart x86_64-unknown-linux-gnu
+"
+
+echo "$help"
+
+}
+
+
+
+bdkbuildtool__help(){
+
+    if [ $# -eq 2 ]; then
+      call "bdkbuildtool__$1_$2" "$@"
+      exit 0
+    fi
+
+    help="
+
+ ____  ____  _  __     ____  _____ ____       ____  _   _ ___ _     ____  
+| __ )|  _ \| |/ /    |  _ \| ____|  _ \     | __ )| | | |_ _| |   |  _ \ 
+|  _ \| | | | ' /_____| |_) |  _| | |_) |____|  _ \| | | || || |   | | | |
+| |_) | |_| | . \_____|  _ <| |___|  __/_____| |_) | |_| || || |___| |_| |
+|____/|____/|_|\_\    |_| \_\_____|_|        |____/ \___/|___|_____|____/ 
+
+        Cross-compile and verify reproducible builds for bdk-rust library.
+            * To use with : BDK-Flutter, LWK-Dart, BOLTZ-dart
+            * Targeting: Linux, Android, iOS, MaoOS 
+USAGE
+    $ bdk-rep-build [COMMAND]
+    $ bdk-rep-build help [COMMAND]
+
+COMMANDS
+    help                show help
+    
+    verify          verify build against release
+    build           build artifacts for a target     
+
+"
+
+echo "$help"
+
+}
+
+
+
+call() {
+    func=$1
+    if type "$func" 1>/dev/null 2>&1; then
+        # if it's bdk_rep_build COMMAND help, then call help for that command
+        case $3 in
+          -h|--help|help)
+          call "bdkbuildtool__help_$2"
+          exit 0
+          ;;
+        esac
+        shift # remove func from args
+        "$func" "$@"  # invoke our named function w/ all remaining arguments
+    else
+        # if it's bdk_rep_build -h COMMAND, then call help for that command
+        case $2 in
+          -h|--help)
+          call "bdkbuildtool__help_$3"
+          exit 0
+          ;;
+        esac
+        bdkbuildtool__help
+        exit 1
+    fi
+}
+
+call "bdkbuildtool__$1" "$@"
