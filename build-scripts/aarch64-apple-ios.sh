@@ -29,7 +29,7 @@ if [ ! $(command -v xcodebuild) ]; then
 fi
 
 
-RUST_VERSION="1.80.0"
+RUST_VERSION="1.81.0"
 
 echo "Installing Rust $RUST_VERSION..."
 rustup install "$RUST_VERSION"

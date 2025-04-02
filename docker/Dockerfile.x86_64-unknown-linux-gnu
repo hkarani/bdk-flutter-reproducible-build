@@ -19,7 +19,7 @@ RUN curl -sSL https://sh.rustup.rs | sh -s -- -y
 
 ENV PATH="/root/.cargo/bin:$PATH"
 
-ENV RUST_VERSION="1.80.0"
+ENV RUST_VERSION="1.81.0"
 
 RUN rustup install "$RUST_VERSION"
 

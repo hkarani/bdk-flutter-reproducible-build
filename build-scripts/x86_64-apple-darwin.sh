@@ -23,7 +23,7 @@ if [ ! $(command -v xcrun) ]; then
   exit 1
 fi
 
-RUST_VERSION="1.80.0"
+RUST_VERSION="1.81.0"
 
 echo "Installing Rust $RUST_VERSION..."
 rustup install "$RUST_VERSION"
@@ -51,7 +51,7 @@ rustup target add x86_64-apple-darwin
 cargo build --release --target x86_64-apple-darwin
 
 file=$(ls $BASE_PATH/src/*/rust/target/x86_64-apple-darwin/release/*.a | head -n 1)  # Get the first `.a` file
-mkdir -p "$BASE_PATH/release/$library/$VERSION/ios/x86_64-apple-darwin"
-mv "$file" "$BASE_PATH/release/$library/$VERSION/ios/x86_64-apple-darwin/x86_64-apple-darwin_lib$package_name.a"
+mkdir -p "$BASE_PATH/release/$library/$VERSION/macos/x86_64-apple-darwin"
+mv "$file" "$BASE_PATH/release/$library/$VERSION/macos/x86_64-apple-darwin/x86_64-apple-darwin_lib$package_name.a"
 cd ../../../
-echo "✅ x86_64-apple-darwin build completed. Binary in release/$library/$VERSION/ios/x86_64-apple-ios/ folder. "
+echo "✅ x86_64-apple-darwin build completed. Binary in release/$library/$VERSION/macos/x86_64-apple-ios/ folder. "
