@@ -3,8 +3,9 @@ library="$1"
 target="$2"
 downloaded_file="$3"
 VERSION="$4"
+platform="$5"
 
-built_binary=$(find "release/$library/$VERSION" -type f -path "*/$target/$target.*" \( -name "*.so" -o -name "*.a" \) | head -n 1)
+built_binary=$(find "release/$library/$VERSION/$platform/$target" -type f \( -name "*.so" -o -name "*.a" \) | head -n 1)
 downloaded_file=$3
 
 if [[ ! -f "$built_binary" ]]; then

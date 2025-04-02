@@ -242,7 +242,78 @@ bdkcross__verify(){
 
     case "$2" in
     "bdk-flutter" | "boltz-dart" | "lwk-dart")
-        ;;
+        parent_folder="$(pwd)/src"
+        lib_folder="$(pwd)/src/$2"
+
+        supported_libraries_keys=("bdk-flutter" "boltz-dart" "lwk-dart")
+        supported_libraries_urls=("https://github.com/LtbLightning/bdk-flutter.git" "https://github.com/SatoshiPortal/boltz-dart.git" "https://github.com/SatoshiPortal/lwk-dart.git")
+
+        # Function to get the repository URL
+        get_repo_url() {
+            local library_name="$1"
+            for i in "${!supported_libraries_keys[@]}"; do
+                if [[ "${supported_libraries_keys[i]}" == "$library_name" ]]; then
+                    echo "${supported_libraries_urls[i]}"
+                    return
+                fi
+            done
+            echo "Library not found"
+            exit 1
+        }
+
+        repo_url=$(get_repo_url $2) 
+
+        if [[ -d "$lib_folder" ]]; then
+            if [[ -d "$lib_folder/.git" ]]; then
+                cd "$lib_folder" || exit 1
+                git fetch origin
+                # Check if local branch is behind
+                if [[ $(git status -uno | grep "Your branch is behind") ]]; then
+                    git pull origin "$(git rev-parse --abbrev-ref HEAD)"
+                else
+                    :
+                fi
+            else
+                rm -rf "$lib_folder"
+                cd $parent_folder
+                git clone "$repo_url"
+                cd $lib_folder
+            fi
+        else
+            cd $parent_folder
+            for subfolder in "$parent_folder"/*/; do
+                if [[ -d "$subfolder" ]]; then
+                    rm -rf "$subfolder" 
+                fi
+            done
+            git clone "$repo_url"
+            cd $lib_folder
+        fi
+        ##Check out the passed tag version
+        git fetch --tags > /dev/null 2>&1
+        VALID_TAGS=$(git tag)
+
+        if [[ -n "$VERSION" ]]; then
+        if ! echo "$VALID_TAGS" | grep -q "^$VERSION$"; then
+            echo "❌ Invalid release tag '$VERSION' passed! Valid release tags:"
+            echo "$VALID_TAGS"
+            exit 1
+        fi
+            git switch --detach $VERSION
+            echo "You're building repo for version $VERSION"
+        else
+            echo "No version specified. Buildng at the lastest release tag of $library."
+            git fetch --tags
+            latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+            if [ -z "$latest_tag" ]; then
+                echo "❌ No tags found in the repository."
+                exit 1
+            fi
+            VERSION=$latest_tag
+        fi
+
+        cd ../../
+    ;;
     *)
         echo "❌ Error: $2 is not a supported library. ❌"
         supported_libraries="
@@ -327,7 +398,30 @@ bdkcross__verify(){
     esac
     # Set variables
     REPO="hkarani/$library"
-    DESTINATION="release/published/$library/$VERSION/$target"
+
+
+        get_platform() {
+            local target="$1"
+            case "$target" in
+                "aarch64-apple-ios" | "aarch64-apple-ios-sim" | "x86_64-apple-ios")
+                    echo "iOS"
+                    ;;
+                "aarch64-apple-darwin" | "x86_64-apple-darwin")
+                    echo "macOS"
+                    ;;
+                "armv7-linux-androideabi" | "aarch64-linux-android" | "i686-linux-android" | "x86_64-linux-android")
+                    echo "Android"
+                    ;;
+                "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu")
+                    echo "Linux"
+                    ;;
+                *)
+                    echo "Unknown"
+                    ;;
+            esac
+        }
+    platform=$(get_platform "$target")
+    DESTINATION="release/published/$library/$VERSION/$platform/$target"
     mkdir -p $DESTINATION  # Change this to your desired location
 
     case "$library" in
@@ -363,7 +457,7 @@ bdkcross__verify(){
     # target="$2"   
     # export $target
 
-    . ./verifier.sh $library $target $downloaded_file $VERSION
+    . ./verifier.sh $library $target $downloaded_file $VERSION $platform
 }
 
 bdkcross__help_verify() {
