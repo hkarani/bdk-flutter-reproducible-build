@@ -32,7 +32,7 @@ For MacOS and iOS targets, you'll need a Mac host to build. Android and Linux ta
 
 Clone this repo and check in to it via CLI. Give bdk-cross.sh executable permissions by running
 ```
- chmod +x bdk-cross.sh
+ chmod +x bdk-cross
 ```
 ### Building your Own Binaries
 
