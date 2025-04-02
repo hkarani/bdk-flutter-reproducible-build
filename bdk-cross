@@ -2,7 +2,7 @@
 
 set -e
 
-bdkbuildtool__build() {
+bdkcross__build() {
     VERSION=$4
     target=$3
     library=$2 
@@ -11,10 +11,10 @@ bdkbuildtool__build() {
         echo "❌ You did not specify a library to build! ❌"
         usage=" 
         USAGE
-            $ ./bdk-rep-build build <library> <target>
+            $ ./bdk-cross build <library> <target>
 
         EXAMPLE 
-            $ ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu"
+            $ ./bdk-cross build bolt-dart x86_64-unknown-linux-gnu"
         echo "$usage"
         exit 1 
     fi
@@ -110,10 +110,10 @@ bdkbuildtool__build() {
         echo "❌ You did not specify a build target! ❌"
         usage=" 
         USAGE
-            $ ./bdk-rep-build build <library> <target>
+            $ ./bdk-cross build <library> <target>
 
         EXAMPLE 
-            $ ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu
+            $ ./bdk-cross build bolt-dart x86_64-unknown-linux-gnu
         "
         echo "$usage"
         exit 1  # Exit script with error code
@@ -206,15 +206,15 @@ bdkbuildtool__build() {
     fi
 }
 
-bdkbuildtool__help_build(){
+bdkcross__help_build(){
 
     help="
     Create a binaries for specific target
     USAGE
-        $ ./bdk-rep-build build <library> <target>
+        $ ./bdk-cross build <library> <target>
 
     EXAMPLE 
-        $ ./bdk-rep-build build bolt-dart x86_64-unknown-linux-gnu
+        $ ./bdk-cross build bolt-dart x86_64-unknown-linux-gnu
     "
 
     echo "$help"
@@ -222,7 +222,7 @@ bdkbuildtool__help_build(){
 }
 
 
-bdkbuildtool__verify(){
+bdkcross__verify(){
     VERSION=$4
     target=$3
     library=$2
@@ -231,10 +231,10 @@ bdkbuildtool__verify(){
         echo "❌ You did not specify a library to verify! ❌"
         usage=" 
         USAGE
-            $ ./bdk-rep-build verify <library> <target>
+            $ ./bdk-cross verify <library> <target>
 
         EXAMPLE 
-            $ ./bdk-rep-build verify bolt-dart x86_64-unknown-linux-gnu
+            $ ./bdk-cross verify bolt-dart x86_64-unknown-linux-gnu
         "
         echo "$usage"
         exit 1 
@@ -260,10 +260,10 @@ bdkbuildtool__verify(){
         echo "❌ You did not specify a target to verify! ❌"
         usage=" 
         USAGE
-            $ ./bdk-rep-build verify <library> <target>
+            $ ./bdk-cross verify <library> <target>
 
         EXAMPLE 
-            $ ./bdk-rep-build verify boltz-dart x86_64-unknown-linux-gnu
+            $ ./bdk-cross verify boltz-dart x86_64-unknown-linux-gnu
         "
         echo "$usage"
         exit 1  # Exit script with error code
@@ -366,15 +366,15 @@ bdkbuildtool__verify(){
     . ./verifier.sh $library $target $downloaded_file $VERSION
 }
 
-bdkbuildtool__help_verify() {
+bdkcross__help_verify() {
     help="
 Verify a build for a specific target
 
 USAGE
-$ ./bdk-rep-build verify <library> <target>
+$ ./bdk-cross verify <library> <target>
 
 EXAMPLE 
-$ ./bdk-rep-build verify boltz-dart x86_64-unknown-linux-gnu
+$ ./bdk-cross verify boltz-dart x86_64-unknown-linux-gnu
 "
 
 echo "$help"
@@ -383,10 +383,10 @@ echo "$help"
 
 
 
-bdkbuildtool__help(){
+bdkcross__help(){
 
     if [ $# -eq 2 ]; then
-      call "bdkbuildtool__$1_$2" "$@"
+      call "bdkcross__$1_$2" "$@"
       exit 0
     fi
 
@@ -402,8 +402,8 @@ bdkbuildtool__help(){
             * To use with : BDK-Flutter, LWK-Dart, BOLTZ-dart
             * Targeting: Linux, Android, iOS, MaoOS 
 USAGE
-    $ bdk-rep-build [COMMAND]
-    $ bdk-rep-build help [COMMAND]
+    $ bdk-cross [COMMAND]
+    $ bdk-cross help [COMMAND]
 
 COMMANDS
     help                show help
@@ -425,7 +425,7 @@ call() {
         # if it's bdk_rep_build COMMAND help, then call help for that command
         case $3 in
           -h|--help|help)
-          call "bdkbuildtool__help_$2"
+          call "bdkcross__help_$2"
           exit 0
           ;;
         esac
@@ -435,13 +435,13 @@ call() {
         # if it's bdk_rep_build -h COMMAND, then call help for that command
         case $2 in
           -h|--help)
-          call "bdkbuildtool__help_$3"
+          call "bdkcross__help_$3"
           exit 0
           ;;
         esac
-        bdkbuildtool__help
+        bdkcross__help
         exit 1
     fi
 }
 
-call "bdkbuildtool__$1" "$@"
+call "bdkcross__$1" "$@"
