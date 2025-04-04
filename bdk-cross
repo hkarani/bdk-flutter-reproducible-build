@@ -1,6 +1,36 @@
 #!/bin/sh
 
 set -e
+run_with_spinner() {
+  local cmd="$1"
+  local label="${2:-Processing}"
+  local success_msg="${3:-Done!}"
+  local failure_msg="${4:-Failed!}"
+
+  # Run the command in the background
+  bash -c "$cmd" > /dev/null 2>&1 &
+  local pid=$!
+
+  # Spinner animation
+  local spin='-\|/'
+  local i=0
+  while kill -0 $pid 2>/dev/null; do
+    i=$(( (i+1) %4 ))
+    printf "\r$label ${spin:$i:1}"
+    sleep 0.1
+  done
+
+  wait $pid
+  local status=$?
+
+  if [ $status -eq 0 ]; then
+    printf "\r$label... $success_msg\n"
+    return 0
+  else
+    printf "\r$label... $failure_msg\n"
+    return 1
+  fi
+}
 
 bdkcross__build() {
     VERSION=$4
@@ -55,7 +85,7 @@ bdkcross__build() {
             else
                 rm -rf "$lib_folder"
                 cd $parent_folder
-                git clone "$repo_url"
+                run_with_spinner "git clone "$repo_url"" "Fetching repo..." "✅Download successful" "❌Error fetching repo!"
                 cd $lib_folder
             fi
         else
@@ -65,7 +95,8 @@ bdkcross__build() {
                     rm -rf "$subfolder" 
                 fi
             done
-            git clone "$repo_url"
+            run_with_spinner "git clone "$repo_url"" "Fetching repo..." "✅Download successful" "❌Error fetching repo!"
+
             cd $lib_folder
         fi
         ##Check out the passed tag version
@@ -195,6 +226,11 @@ bdkcross__build() {
                     -aarch64-apple-ios 
                     -aarch64-apple-ios-sim 
                     -x86_64-apple-ios
+                    -ios
+                    -macos
+                    -linux
+                    -macos
+                    -all
             "
             echo "$supported_targets"
             exit 1
@@ -286,7 +322,8 @@ bdkcross__verify(){
                     rm -rf "$subfolder" 
                 fi
             done
-            git clone "$repo_url"
+            run_with_spinner "git clone "$repo_url"" "Fetching repo..." "✅Download successful" "❌Error fetching repo!"
+
             cd $lib_folder
         fi
         ##Check out the passed tag version
@@ -300,9 +337,9 @@ bdkcross__verify(){
             exit 1
         fi
             git switch --detach $VERSION
-            echo "You're building repo for version $VERSION"
+            echo "You're verifying repo for version $VERSION"
         else
-            echo "No version specified. Buildng at the lastest release tag of $library."
+            echo "No version specified. Verifying with the lastest release tag of $library."
             git fetch --tags
             latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
             if [ -z "$latest_tag" ]; then
@@ -340,13 +377,144 @@ bdkcross__verify(){
         exit 1  # Exit script with error code
     fi
 
+    cd src/$library/rust
+    package_name_line=$(grep -m 1 -E '^name = .*' Cargo.toml)
+
+    if [ ! -z "$package_name_line" ]; then
+        package_name=$(echo "$package_name_line" | cut -d '=' -f2 | tr -d '[:space:]' | sed 's/^"//' | sed 's/"$//')
+    else
+        echo "Error: Could not find 'name' in [package] section"
+        exit 1
+    fi
+    cd ../../../
+    download_and_verify_library() {
+        local library="$1"
+        local target="$2"
+        local VERSION="$3"
+
+        local binary_name
+        case "$target" in
+            "x86_64-unknown-linux-gnu") binary_name="x86_64-unknown-linux-gnu_lib$package_name.so" ;;
+            "aarch64-unknown-linux-gnu") binary_name="aarch64-unknown-linux-gnu_lib$package_name.so" ;;
+            "x86_64-apple-darwin") binary_name="x86_64-apple-darwin_lib$package_name.a" ;;
+            "aarch64-apple-darwin") binary_name="aarch64-apple-darwin_lib$package_name.a" ;;
+            "aarch64-apple-ios") binary_name="aarch64-apple-ios_lib$package_name.a" ;;
+            "aarch64-apple-ios-sim") binary_name="aarch64-apple-ios-sim_lib$package_name.a" ;;
+            "x86_64-apple-ios") binary_name="x86_64-apple-ios_lib$package_name.a" ;;
+            "aarch64-linux-android") binary_name="aarch64-linux-android_lib$package_name.so" ;;
+            "i686-linux-android") binary_name="i686-linux-android_lib$package_name.so" ;;
+            "x86_64-linux-android") binary_name="x86_64-linux-android_lib$package_name.so" ;;
+            "armv7-linux-androideabi") binary_name="armv7-linux-androideabi_lib$package_name.so" ;;
+            *) echo "Error: Unsupported target '$target'"; return 1 ;;
+        esac
+        local get_platform
+        get_platform() {
+            case "$1" in
+                "aarch64-apple-ios" | "aarch64-apple-ios-sim" | "x86_64-apple-ios")
+                    echo "ios"
+                    ;;
+                "aarch64-apple-darwin" | "x86_64-apple-darwin")
+                    echo "macos"
+                    ;;
+                "armv7-linux-androideabi" | "aarch64-linux-android" | "i686-linux-android" | "x86_64-linux-android")
+                    echo "android"
+                    ;;
+                "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu")
+                    echo "linux"
+                    ;;
+                *)
+                    echo "Unknown"
+                    ;;
+            esac
+        }
+
+        local platform
+        platform=$(get_platform "$target")
+        local DESTINATION="release/published/$library/$VERSION/$platform/$target"
+        mkdir -p "$DESTINATION"
+
+        local REPO="hkarani/$library"
+        case "$library" in
+            "bdk-flutter") repo_name="LtbLightning/bdk-flutter" ;;
+            "boltz-dart") repo_name="SatoshiPortal/boltz-dart" ;;
+            "lwk-dart") repo_name="SatoshiPortal/lwk-dart" ;;
+            *) echo "Error: Unsupported library '$library'"; return 1 ;;
+        esac
+
+        local FILE_URL="https://github.com/$REPO/releases/download/$VERSION/$binary_name"
+
+        if [[ -z "$FILE_URL" ]]; then
+            echo "No matching file found for target: $target"
+            return 1
+        fi
+
+        local FILENAME
+        FILENAME=$(basename "$FILE_URL")
+
+       curl -L -o "$DESTINATION/$FILENAME" "$FILE_URL" >/dev/null 2>&1 || {
+            echo "Error: Failed to download $FILENAME from $FILE_URL"
+            exit 1
+        }
+
+        if grep -qi "not found" "$DESTINATION/$FILENAME"; then
+            echo "❌Error: The file '$FILENAME' was downloaded but appears to be a 404 page (Not Found)."
+            rm "$DESTINATION/$FILENAME"  # Optional: remove the invalid file
+            exit 1
+        fi
+
+        local downloaded_file
+        downloaded_file="$(cd "$DESTINATION" && pwd)/$FILENAME"
+
+        . ./verifier.sh "$library" "$target" "$downloaded_file" "$VERSION" "$platform"
+    }
+
+    
     case "$3" in
         "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu" | \
         "armv7-linux-androideabi" | "aarch64-linux-android" | "i686-linux-android" | \
         "x86_64-linux-android" | "x86_64-pc-windows-msvc" | "x86_64-apple-darwin" | \
         "aarch64-apple-darwin" | "aarch64-apple-ios" | "aarch64-apple-ios-sim" | \
         "x86_64-apple-ios")
+            download_and_verify_library $library $target $VERSION
         ;;
+        "ios")
+            ios_targets=("aarch64-apple-ios" "x86_64-apple-ios" "aarch64-apple-ios-sim")
+            for trgt in "${ios_targets[@]}"; do
+                download_and_verify_library $library $trgt $VERSION
+            done
+        ;;
+        "macos")
+            macos_targets=("x86_64-apple-darwin" "aarch64-apple-darwin")
+            for trgt in "${macos_targets[@]}"; do
+                 download_and_verify_library $library $trgt $VERSION
+            done
+        ;;
+        "android")
+            android_targets=("aarch64-linux-android" "armv7-linux-androideabi" "i686-linux-android" "x86_64-linux-android")
+            for trgt in "${android_targets[@]}"; do
+                download_and_verify_library $library $trgt $VERSION
+            done
+        ;;
+        "linux")
+            linux_targets=("x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu")
+            for trgt in "${linux_targets[@]}"; do
+                download_and_verify_library $library $trgt $VERSION
+            done
+        ;;
+        "all")
+            all_targets=(
+                "x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu"
+                "armv7-linux-androideabi" "aarch64-linux-android" "i686-linux-android"
+                "x86_64-linux-android" "x86_64-apple-darwin"
+                "aarch64-apple-darwin" "aarch64-apple-ios" "aarch64-apple-ios-sim"
+                "x86_64-apple-ios"
+            )
+            
+            for trgt in "${all_targets[@]}"; do
+                download_and_verify_library $library $trgt $VERSION
+            done
+        ;;
+        
     *)
         echo "❌ Error: $3 is not a supported target you can verify. ❌"
     supported_targets="
@@ -363,101 +531,17 @@ bdkcross__verify(){
                 -aarch64-apple-ios 
                 -aarch64-apple-ios-sim 
                 -x86_64-apple-ios
-
+                -ios
+                -macos
+                -linux
+                -macos
+                -all
        "
         echo "$supported_targets"
         exit 1
         ;;
     esac
-    
-    cd src/$library/rust
-    package_name_line=$(grep -m 1 -E '^name = .*' Cargo.toml)
 
-    if [ ! -z "$package_name_line" ]; then
-        package_name=$(echo "$package_name_line" | cut -d '=' -f2 | tr -d '[:space:]' | sed 's/^"//' | sed 's/"$//')
-    else
-        echo "Error: Could not find 'name' in [package] section"
-        exit 1
-    fi
-
-    echo $package_name
-    cd ../../../
-    case "$target" in
-    "x86_64-unknown-linux-gnu") binary_name="x86_64-unknown-linux-gnu_lib$package_name.so" ;;
-    "aarch64-unknown-linux-gnu") binary_name="aarch64-unknown-linux-gnu_lib$package_name.so" ;;
-    "x86_64-apple-darwin") binary_name="x86_64-apple-darwin_lib$package_name.a" ;;
-    "aarch64-apple-darwin") binary_name="aarch64-apple-darwin_lib$package_name.a" ;;
-    "aarch64-apple-ios") binary_name="aarch64-apple-ios_lib$package_name.a" ;;
-    "aarch64-apple-ios-sim") binary_name="aarch64-apple-ios-sim_lib$package_name.a" ;;
-    "x86_64-apple-ios") binary_name="x86_64-apple-ios_lib$package_name.a" ;;
-    "aarch64-linux-android") binary_name="aarch64-linux-android_lib$package_name.so" ;;
-    "i686-linux-android") binary_name="i686-linux-android_lib$package_name.so" ;;
-    "x86_64-linux-android") binary_name="x86_64-linux-android_lib$package_name.so" ;;
-    "armv7-linux-androideabi") binary_name="armv7-linux-androideabi_lib$package_name.so" ;;
-    *) echo "Error: Unsupported target '$target'"; exit 1 ;;
-    esac
-    # Set variables
-    REPO="hkarani/$library"
-
-
-        get_platform() {
-            local target="$1"
-            case "$target" in
-                "aarch64-apple-ios" | "aarch64-apple-ios-sim" | "x86_64-apple-ios")
-                    echo "iOS"
-                    ;;
-                "aarch64-apple-darwin" | "x86_64-apple-darwin")
-                    echo "macOS"
-                    ;;
-                "armv7-linux-androideabi" | "aarch64-linux-android" | "i686-linux-android" | "x86_64-linux-android")
-                    echo "Android"
-                    ;;
-                "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu")
-                    echo "Linux"
-                    ;;
-                *)
-                    echo "Unknown"
-                    ;;
-            esac
-        }
-    platform=$(get_platform "$target")
-    DESTINATION="release/published/$library/$VERSION/$platform/$target"
-    mkdir -p $DESTINATION  # Change this to your desired location
-
-    case "$library" in
-    "bdk-flutter") repo_name="LtbLightning/bdk-flutter" ;;
-    "boltz-dart") repo_name="SatoshiPortal/boltz-dart" ;;
-    "lwk-dart") repo_name="SatoshiPortal/lwk-dart" ;;
-    *) 
-        echo "Error: Unsupported library '$library'"
-        exit 1
-        ;;
-    esac
-
-    FILE_URL1=""
-
-    # Fetch the filename dynamically
-    FILE_URL="https://github.com/$REPO/releases/download/$VERSION/$binary_name"
-
-    # Check if a file was found
-    if [[ -z "$FILE_URL" ]]; then
-        echo "No matching file found for target: $target"
-        echo $FILE_URL
-        exit 1
-    fi
-
-   
-    # Extract filename
-    FILENAME=$(basename "$FILE_URL")
-    # Download the file
-    curl -L -o "$DESTINATION/$FILENAME" "$FILE_URL" >/dev/null 2>&1
-
-   downloaded_file="$(cd "$DESTINATION" && pwd)/$FILENAME"
-
-    # target="$2"   
-    # export $target
-
-    . ./verifier.sh $library $target $downloaded_file $VERSION $platform
 }
 
 bdkcross__help_verify() {
@@ -510,8 +594,6 @@ COMMANDS
 echo "$help"
 
 }
-
-
 
 call() {
     func=$1

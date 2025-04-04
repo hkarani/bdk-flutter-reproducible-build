@@ -13,6 +13,7 @@ if [[ ! -f "$built_binary" ]]; then
     exit 1
 fi
 
+
 if [[ ! -f "$downloaded_file" ]]; then
     echo "❌Error: Downloaded file not found at $downloaded_file"
     exit 1
@@ -23,6 +24,5 @@ if cmp "$built_binary" "$downloaded_file" > /dev/null 2>&1; then
 else
   echo "❌Fail. Mismatch detected ❌."
 fi
-echo " "
 
 
