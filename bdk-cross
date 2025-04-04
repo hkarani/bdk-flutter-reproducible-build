@@ -451,16 +451,16 @@ bdkcross__verify(){
         local FILENAME
         FILENAME=$(basename "$FILE_URL")
 
+        if ! curl --head --silent --fail "$FILE_URL" > /dev/null; then
+            echo "Error: File not found at $FILE_URL"
+            exit 1
+        fi
+
        curl -L -o "$DESTINATION/$FILENAME" "$FILE_URL" >/dev/null 2>&1 || {
             echo "Error: Failed to download $FILENAME from $FILE_URL"
             exit 1
         }
 
-        if grep -qi "not found" "$DESTINATION/$FILENAME"; then
-            echo "❌Error: The file '$FILENAME' was downloaded but appears to be a 404 page (Not Found)."
-            rm "$DESTINATION/$FILENAME"  # Optional: remove the invalid file
-            exit 1
-        fi
 
         local downloaded_file
         downloaded_file="$(cd "$DESTINATION" && pwd)/$FILENAME"
