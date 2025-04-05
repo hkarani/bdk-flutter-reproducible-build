@@ -20,7 +20,7 @@ if [[ ! -f "$downloaded_file" ]]; then
 fi
 
 if cmp "$built_binary" "$downloaded_file" > /dev/null 2>&1; then
-  echo "✅ Success! The binaries are byte by byte identical ✅."
+  echo "✅ Success! $target binary is byte by byte identical with published library ✅."
 else
   echo "❌Fail. Mismatch detected ❌."
 fi
